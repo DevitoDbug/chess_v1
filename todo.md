@@ -1,5 +1,6 @@
 ## Steps to how this building would go
 1. Define the types, i.e; the pieces and the board.
+
 2. Initialize the board. First render should have pieces in the right position. 
 3. Program the possible moves for each piece. 
 4. Evaluate if it is possible to move a piece to a certain position.

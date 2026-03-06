@@ -19,8 +19,12 @@ const (
 )
 
 type Piece struct {
-	Type  PieceType
-	Color PieceColor
+	Type         PieceType
+	Color        PieceColor
+	RenderLetter string
 }
 
-var Board [8][8]*PieceType
+const (
+	RowNumber    = 8
+	ColumnNumber = 8
+)

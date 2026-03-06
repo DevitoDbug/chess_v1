@@ -1,7 +1,11 @@
+// Package main - application entry point
 package main
 
-import "fmt"
+import (
+	"github.com/DevitoDbug/chess_v1/engine"
+)
 
 func main() {
-	fmt.Println("Hello world!")
+	game := engine.NewEngine()
+	game.RenderTerminal()
 }
