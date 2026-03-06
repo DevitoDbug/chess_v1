@@ -7,5 +7,5 @@ import (
 
 func main() {
 	game := engine.NewEngine()
-	game.RenderTerminal()
+	game.Run()
 }
