@@ -40,22 +40,30 @@ type Input struct {
 	Type         PieceType
 	DestinationX int
 	DestinationY int
+	StartX       int
+	StartY       int
+	Piece        *Piece
 }
 
 // Expected sample input BN-a2
-func ParseInput(addressString string) (Input, error) {
+func (e *Engine) ParseInput(addressString string) (Input, error) {
 	var colorString string
 	var pieceString string
 	var destinationX int
 	var destinationY int
+	var startX int
+	var startY int
 	var color PieceColor
-	var piece PieceType
+	var pieceType PieceType
+	var piece *Piece
 	values := strings.Split(addressString, "-")
 
 	if len(values[0]) >= 2 {
 		colorString = string(values[0][0])
 		pieceString = string(values[0][1])
 
+		// TODO: remove this check we know who is playing we do not need the color of the piece specified
+		//
 		switch colorString {
 		case "B":
 			color = Black
@@ -67,23 +75,35 @@ func ParseInput(addressString string) (Input, error) {
 
 		switch pieceString {
 		case "K":
-			piece = King
+			pieceType = King
 		case "Q":
-			piece = Queen
+			pieceType = Queen
 		case "R":
-			piece = Rook
+			pieceType = Rook
 		case "B":
-			piece = Bishop
+			pieceType = Bishop
 		case "N":
-			piece = Knight
+			pieceType = Knight
 		case "P":
-			piece = Pawn
+			pieceType = Pawn
 		default:
 			return Input{}, fmt.Errorf("invalid address")
 		}
 
 	} else {
 		return Input{}, fmt.Errorf("invalid address")
+	}
+	// Piece from the board
+	for row := range 8 {
+		for col := range 8 {
+			boardPiece := e.Board[row][col]
+
+			if boardPiece != nil && boardPiece.Color == e.CurrentPlayerColor && boardPiece.Type == pieceType {
+				piece = boardPiece
+				startX = row
+				startY = col
+			}
+		}
 	}
 
 	if len(values[1]) >= 2 {
@@ -117,8 +137,11 @@ func ParseInput(addressString string) (Input, error) {
 
 	return Input{
 		Color:        color,
-		Type:         piece,
+		Type:         pieceType,
 		DestinationX: destinationX,
 		DestinationY: destinationY,
+		StartX:       startX,
+		StartY:       startY,
+		Piece:        piece,
 	}, nil
 }
