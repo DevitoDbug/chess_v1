@@ -2,10 +2,19 @@
 package main
 
 import (
-	"github.com/DevitoDbug/chess_v1/engine"
+	"fmt"
+	"strings"
 )
 
 func main() {
-	game := engine.NewEngine()
-	game.Run()
+	values := strings.Split("B-a2", "-")
+	if len(values[0]) >= 2 {
+		colorType := values[0][0]
+		pieceType := values[0][1]
+		fmt.Printf("color: %c \n piece: %c\n", colorType, pieceType)
+	} else {
+		fmt.Print("error")
+	}
+	// game := engine.NewEngine()
+	// game.Run()
 }

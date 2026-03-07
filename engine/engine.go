@@ -8,11 +8,14 @@ package engine
 import "log"
 
 type Engine struct {
-	Board [8][8]*Piece
+	Board              [8][8]*Piece
+	CurrentPlayerColor PieceColor
 }
 
 func NewEngine() *Engine {
-	engine := &Engine{}
+	engine := &Engine{
+		CurrentPlayerColor: White,
+	}
 
 	engine.Init() // Fucking annoying to export initializations
 	return engine
@@ -23,6 +26,7 @@ func (e *Engine) Init() {
 		log.Fatal("Engine not set")
 		return
 	}
+
 	// Pawns
 	for col := range 8 {
 		e.Board[1][col] = &Piece{
