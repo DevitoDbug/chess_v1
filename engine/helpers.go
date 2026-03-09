@@ -2,6 +2,7 @@ package engine
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 )
 
@@ -36,112 +37,77 @@ func GetColorLetter(color PieceColor) string {
 }
 
 type Input struct {
-	Color        PieceColor
-	Type         PieceType
-	DestinationX int
-	DestinationY int
-	StartX       int
-	StartY       int
-	Piece        *Piece
+	StartX       int32
+	StartY       int32
+	DestinationX int32
+	DestinationY int32
 }
 
-// Expected sample input BN-a2
-func (e *Engine) ParseInput(addressString string) (Input, error) {
-	var colorString string
-	var pieceString string
-	var destinationX int
-	var destinationY int
-	var startX int
-	var startY int
-	var color PieceColor
-	var pieceType PieceType
-	var piece *Piece
-	values := strings.Split(addressString, "-")
+// Expect input like a2f4
+// Get the starting square and the destination square
+func ParseInput(addressInputString string) (Input, error) {
+	chars := strings.Split(addressInputString, "")
+	fmt.Printf("Input is: %+v", chars)
 
-	if len(values[0]) >= 2 {
-		colorString = string(values[0][0])
-		pieceString = string(values[0][1])
-
-		// TODO: remove this check we know who is playing we do not need the color of the piece specified
-		//
-		switch colorString {
-		case "B":
-			color = Black
-		case "W":
-			color = White
-		default:
-			return Input{}, fmt.Errorf("invalid address")
-		}
-
-		switch pieceString {
-		case "K":
-			pieceType = King
-		case "Q":
-			pieceType = Queen
-		case "R":
-			pieceType = Rook
-		case "B":
-			pieceType = Bishop
-		case "N":
-			pieceType = Knight
-		case "P":
-			pieceType = Pawn
-		default:
-			return Input{}, fmt.Errorf("invalid address")
-		}
-
-	} else {
-		return Input{}, fmt.Errorf("invalid address")
-	}
-	// Piece from the board
-	for row := range 8 {
-		for col := range 8 {
-			boardPiece := e.Board[row][col]
-
-			if boardPiece != nil && boardPiece.Color == e.CurrentPlayerColor && boardPiece.Type == pieceType {
-				piece = boardPiece
-				startX = row
-				startY = col
-			}
-		}
+	if len(chars) != 4 {
+		return Input{}, fmt.Errorf("invalid input. String provided is not of the required length")
 	}
 
-	if len(values[1]) >= 2 {
-		switch values[1][0] {
-		case 'a':
-			destinationX = 0
-		case 'b':
-			destinationX = 1
-		case 'c':
-			destinationX = 2
-		case 'd':
-			destinationX = 3
-		case 'e':
-			destinationX = 4
-		case 'f':
-			destinationX = 5
-		case 'g':
-			destinationX = 6
-		case 'h':
-			destinationX = 7
-		default:
-			return Input{}, fmt.Errorf("invalid address")
-		}
+	startingX, err := ConvertLetterToCorrespondingIndexNumber(chars[0])
+	if err != nil {
+		return Input{}, fmt.Errorf("invalid input. First char is invalid try using a letter between a and h")
 	}
 
-	c := values[1][1]
-	if c < '0' || c > '9' {
-		return Input{}, fmt.Errorf("invalid coordinate")
+	startingY, err := ConvertStringNumberToInt32(chars[1])
+	if err != nil {
+		return Input{}, fmt.Errorf("invalid input. Second char is invalid try using a  between 1 and 8")
 	}
-	destinationY = int(c - '0') // Ascii subtraction gives the actual number rep
+
+	destinationX, err := ConvertLetterToCorrespondingIndexNumber(chars[2])
+	if err != nil {
+		return Input{}, fmt.Errorf("invalid input. Third char is invalid try using a letter between a and h")
+	}
+
+	destinationY, err := ConvertStringNumberToInt32(chars[3])
+	if err != nil {
+		return Input{}, fmt.Errorf("invalid input. Forth char is invalid try using a  between 1 and 8")
+	}
 
 	return Input{
-		Color:        color,
-		Type:         pieceType,
+		StartX:       startingX,
+		StartY:       startingY - 1,
 		DestinationX: destinationX,
-		DestinationY: destinationY,
-		StartX:       startX,
-		StartY:       startY,
-		Piece:        piece,
+		DestinationY: destinationY - 1,
 	}, nil
+}
+
+func ConvertLetterToCorrespondingIndexNumber(char string) (int32, error) {
+	switch char {
+	case "a":
+		return 0, nil
+	case "b":
+		return 1, nil
+	case "c":
+		return 2, nil
+	case "d":
+		return 3, nil
+	case "e":
+		return 4, nil
+	case "f":
+		return 5, nil
+	case "g":
+		return 6, nil
+	case "h":
+		return 7, nil
+	default:
+		return 0, fmt.Errorf("invalid address")
+	}
+}
+
+func ConvertStringNumberToInt32(char string) (int32, error) {
+	num, err := strconv.Atoi(char)
+	if err != nil || num <= 0 { // No position x = 0 in the board from the users view
+		return 0, err
+	}
+	return int32(num), nil
 }

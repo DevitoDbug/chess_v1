@@ -42,7 +42,7 @@ func (e *Engine) Init() {
 	}
 
 	// Other pieces
-	oderOfPieces := [8]PieceType{Rook, Knight, Bishop, King, Queen, Bishop, Knight, Rook}
+	oderOfPieces := [8]PieceType{Rook, Knight, Bishop, Queen, King, Bishop, Knight, Rook}
 	for col := range 8 {
 		piece := oderOfPieces[col]
 		renderLetter := GetRenderLetter(piece)
@@ -57,4 +57,21 @@ func (e *Engine) Init() {
 			RenderLetter: renderLetter,
 		}
 	}
+}
+
+func (e *Engine) String() string {
+	var output string
+	for row := range 8 {
+		for col := range 8 {
+			piece := e.Board[row][col]
+			if piece != nil {
+				output += piece.RenderLetter
+			} else {
+				output += "0"
+			}
+		}
+		output += "\n"
+	}
+
+	return output
 }

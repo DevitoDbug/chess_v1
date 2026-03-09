@@ -2,16 +2,12 @@ package engine
 
 import (
 	"fmt"
-
-	"github.com/DevitoDbug/chess_v1/utils"
 )
 
 // This file contains the game loop
 
 func (e *Engine) Run() {
 	for {
-		fmt.Println("hello")
-
 		// Render the board
 		e.RenderTerminal()
 
@@ -23,18 +19,18 @@ func (e *Engine) Run() {
 			fmt.Println("Invalid value entered")
 		}
 
-		parsedInput, err := e.ParseInput(input)
+		parsedInput, err := ParseInput(input)
 		if err != nil {
 			fmt.Println("Invalid value entered")
 		}
-		fmt.Println(parsedInput)
+		fmt.Printf("parse Input is: %+v\n", parsedInput)
 
 		// Check if it is a valid move
 		// 	-> Is it the correct correct color
 		//	-> Is the destination allowed (Not out of bound, our piece can move there, another of our piece is not there)
 		err = e.MovePiece(parsedInput)
 		if err != nil {
-			fmt.Printf("%vinvalid move\n%v", utils.Red, utils.White)
+			fmt.Printf("%v", err)
 		}
 
 		fmt.Println("******************************************")

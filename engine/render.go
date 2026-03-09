@@ -11,27 +11,27 @@ func (e *Engine) RenderTerminal() {
 	utils.MoveCursorTopLeft()
 
 	// Loop the mf so by row and print the columns
-	for row := range RowNumber {
-		fmt.Printf("%v %v", utils.Red, 8-row)
+	for row := RowNumber - 1; row >= 0; row-- {
+		fmt.Printf("%v %v", utils.Red, row+1)
 		fmt.Printf("%v |", utils.White)
 		for col := range ColumnNumber {
-			if e.Board[row][col] == nil {
-				fmt.Printf("    |")
+			piece := e.Board[row][col]
+			if piece == nil {
+				fmt.Printf("  . |")
 			} else {
-				fmt.Printf(" %v%v |", GetColorLetter(e.Board[row][col].Color), e.Board[row][col].RenderLetter)
+				fmt.Printf(" %v%v |", GetColorLetter(piece.Color), piece.RenderLetter)
 			}
 		}
 		fmt.Println("")
 		for range ColumnNumber {
 			fmt.Printf("------")
 		}
-		fmt.Println("")
+		fmt.Println()
 	}
 
 	fmt.Printf("   |")
-	columnLetters := []string{"a", "b", "c", "d", "e", "f", "g", "h"}
-	for _, letter := range columnLetters {
-		fmt.Printf("%v %v  |", utils.Red, letter)
+	for num := range ColumnNumber {
+		fmt.Printf("%v %c  |", utils.Red, 'a'+num)
 	}
 	fmt.Printf("%v\n", utils.White)
 }

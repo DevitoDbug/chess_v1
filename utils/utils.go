@@ -3,7 +3,7 @@
 package utils
 
 // AbsoluteDiff - returns |a-b| i.e the absolute difference  between a and b
-func AbsoluteDiff(a, b int) int {
+func AbsoluteDiff(a, b int32) int32 {
 	if a > b {
 		return a - b
 	}
