@@ -10,6 +10,7 @@ import "log"
 type Engine struct {
 	Board              [8][8]*Piece
 	CurrentPlayerColor PieceColor
+	AmpersandSquare    *Square
 }
 
 func NewEngine() *Engine {

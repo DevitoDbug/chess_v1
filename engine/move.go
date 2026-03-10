@@ -40,6 +40,15 @@ func (e *Engine) MovePiece(input Input) error {
 		return fmt.Errorf("invalid piece provided")
 	}
 
+	// Clean up AmpersandSquare
+	if e.AmpersandSquare != nil {
+		if e.AmpersandSquare.Checked {
+			e.AmpersandSquare = nil
+		} else {
+			e.AmpersandSquare.Checked = true
+		}
+	}
+
 	return nil
 }
 
@@ -47,17 +56,7 @@ type Move [2]int // Format is (x,y)
 
 func (e *Engine) MovePawn(startingX, startingY, destinationX, destinationY int32) error {
 	startingPiece := e.Board[startingY][startingX]
-
-	_ = []Move{
-		{0, 1}, // Normal move for pawns
-		{0, 2}, // First move, pawn moves two steps
-		{1, 1}, // Diagonal taking
-
-		// Weird moves (FAAAAAAaaahhhhh)
-		{1, 1},  // Ampersand to the right
-		{-1, 1}, // Ampersand to the left
-	}
-	// TODO: Ampersand
+	destinationPiece := e.Board[destinationY][destinationX]
 
 	x1 := startingX
 	y1 := startingY
@@ -77,11 +76,23 @@ func (e *Engine) MovePawn(startingX, startingY, destinationX, destinationY int32
 		yDiff = y1 - y2
 	}
 
+	// Attacking a piece
 	if xAbsDiff == 1 && yAbsDiff == 1 && yDiff > 0 {
 		// yDiff check is to make sure that we are moving in the right direction,
 		// white is not moving toward 0 and black towards 7
-		if e.Board[destinationY][destinationX] != nil && e.Board[destinationY][destinationX].Color == e.CurrentPlayerColor {
+		isAmpersandMove := e.AmpersandSquare != nil && destinationY == e.AmpersandSquare.RowIndex && destinationX == e.AmpersandSquare.ColumnIndex
+		isAttackingOpponentPiece := destinationPiece != nil && destinationPiece.Color != e.CurrentPlayerColor
+		if !isAttackingOpponentPiece && !isAmpersandMove {
 			return fmt.Errorf("player is not allowed to attack his own piece")
+		}
+
+		if isAmpersandMove {
+			switch e.CurrentPlayerColor {
+			case White:
+				e.Board[e.AmpersandSquare.RowIndex-1][e.AmpersandSquare.ColumnIndex] = nil
+			case Black:
+				e.Board[e.AmpersandSquare.RowIndex+1][e.AmpersandSquare.ColumnIndex] = nil
+			}
 		}
 
 		e.Board[destinationY][destinationX] = e.Board[startingY][startingX]
@@ -90,7 +101,7 @@ func (e *Engine) MovePawn(startingX, startingY, destinationX, destinationY int32
 	}
 
 	if xDiff != 0 {
-		return fmt.Errorf("currently pawns are only allowed to move forward or attack diagonally one step")
+		return fmt.Errorf("pawns are only allowed to move forward or attack diagonally one step")
 	}
 
 	if yDiff == 0 {
@@ -103,13 +114,23 @@ func (e *Engine) MovePawn(startingX, startingY, destinationX, destinationY int32
 
 	if yDiff == 2 {
 		switch startingPiece.Color {
+		// Moving two steps creates possibility for ampersand in the position (starting position + 1) or
+		// (destination position -1 ) from whites perspective
 		case White:
 			if startingY != 1 {
 				return fmt.Errorf("paws can only move two moves if it is the first move")
 			}
+			e.AmpersandSquare = &Square{
+				RowIndex:    int32(startingY + 1),
+				ColumnIndex: startingX,
+			}
 		case Black:
 			if startingY != 6 {
 				return fmt.Errorf("paws can only move two moves if it is the first move")
+			}
+			e.AmpersandSquare = &Square{
+				RowIndex:    int32(startingY - 1),
+				ColumnIndex: startingX,
 			}
 		default:
 			return fmt.Errorf("pawn color not recognized")

@@ -28,3 +28,9 @@ const (
 	RowNumber    = 8
 	ColumnNumber = 8
 )
+
+type Square struct {
+	RowIndex    int32
+	ColumnIndex int32
+	Checked     bool
+}
