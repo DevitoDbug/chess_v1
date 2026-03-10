@@ -46,11 +46,12 @@ func (e *Engine) MovePiece(input Input) error {
 type Move [2]int // Format is (x,y)
 
 func (e *Engine) MovePawn(startingX, startingY, destinationX, destinationY int32) error {
-	piece := e.Board[startingY][startingX]
+	startingPiece := e.Board[startingY][startingX]
 
 	_ = []Move{
 		{0, 1}, // Normal move for pawns
 		{0, 2}, // First move, pawn moves two steps
+		{1, 1}, // Diagonal taking
 
 		// Weird moves (FAAAAAAaaahhhhh)
 		{1, 1},  // Ampersand to the right
@@ -62,12 +63,10 @@ func (e *Engine) MovePawn(startingX, startingY, destinationX, destinationY int32
 	y1 := startingY
 	x2 := destinationX
 	y2 := destinationY
+	xAbsDiff := utils.AbsoluteDiff(x1, x2)
+	yAbsDiff := utils.AbsoluteDiff(y1, y2)
 
 	xDiff := x2 - x1
-	if xDiff != 0 {
-		return fmt.Errorf("currently pawns are only allowed to move forward")
-	}
-
 	yDiff := int32(0)
 	switch e.CurrentPlayerColor {
 	// White moves are positive while black moves are negative
@@ -78,17 +77,32 @@ func (e *Engine) MovePawn(startingX, startingY, destinationX, destinationY int32
 		yDiff = y1 - y2
 	}
 
+	if xAbsDiff == 1 && yAbsDiff == 1 && yDiff > 0 {
+		// yDiff check is to make sure that we are moving in the right direction,
+		// white is not moving toward 0 and black towards 7
+		if e.Board[destinationY][destinationX] != nil && e.Board[destinationY][destinationX].Color == e.CurrentPlayerColor {
+			return fmt.Errorf("player is not allowed to attack his own piece")
+		}
+
+		e.Board[destinationY][destinationX] = e.Board[startingY][startingX]
+		e.Board[startingY][startingX] = nil
+		return nil
+	}
+
+	if xDiff != 0 {
+		return fmt.Errorf("currently pawns are only allowed to move forward or attack diagonally one step")
+	}
+
 	if yDiff == 0 {
 		return fmt.Errorf("pawn did not move")
 	}
 
 	if yDiff != 2 && yDiff != 1 {
-		fmt.Println("We are failing here ")
 		return fmt.Errorf("pawns are only allowed to move one step forward, or two steps for the first move")
 	}
 
 	if yDiff == 2 {
-		switch piece.Color {
+		switch startingPiece.Color {
 		case White:
 			if startingY != 1 {
 				return fmt.Errorf("paws can only move two moves if it is the first move")
