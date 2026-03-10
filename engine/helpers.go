@@ -47,7 +47,6 @@ type Input struct {
 // Get the starting square and the destination square
 func ParseInput(addressInputString string) (Input, error) {
 	chars := strings.Split(addressInputString, "")
-	fmt.Printf("Input is: %+v", chars)
 
 	if len(chars) != 4 {
 		return Input{}, fmt.Errorf("invalid input. String provided is not of the required length")
@@ -110,4 +109,12 @@ func ConvertStringNumberToInt32(char string) (int32, error) {
 		return 0, err
 	}
 	return int32(num), nil
+}
+
+func toggleCurrentPlayer(currentPlayerColor PieceColor) PieceColor {
+	if currentPlayerColor == Black {
+		return White
+	}
+
+	return Black
 }

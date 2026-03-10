@@ -7,13 +7,14 @@ import (
 )
 
 func (e *Engine) MovePiece(input Input) error {
-	// Evaluate the type of piece passed in
-	fmt.Println(e)
-	fmt.Printf("%+v\n", input)
-
 	piece := e.Board[input.StartY][input.StartX]
 	if piece == nil {
 		return fmt.Errorf("no piece in the square referenced")
+	}
+
+	// Catch players moving other opponents pieces early
+	if piece.Color != e.CurrentPlayerColor {
+		return fmt.Errorf("invalid move, you can only move pieces belonging to the current player")
 	}
 
 	switch piece.Type {
@@ -23,17 +24,22 @@ func (e *Engine) MovePiece(input Input) error {
 			return err
 		}
 	case King:
+		return fmt.Errorf("king move not implemented yet")
 	case Queen:
+		return fmt.Errorf("queen move not implemented yet")
 	case Rook:
+		return fmt.Errorf("rook move not implemented yet")
 	case Bishop:
 		err := e.MoveBishop(input.StartX, input.StartY, input.DestinationX, input.DestinationY)
 		if err != nil {
 			return err
 		}
 	case Knight:
+		return fmt.Errorf("night move not implemented yet")
 	default:
 		return fmt.Errorf("invalid piece provided")
 	}
+
 	return nil
 }
 
@@ -42,15 +48,11 @@ type Move [2]int // Format is (x,y)
 func (e *Engine) MovePawn(startingX, startingY, destinationX, destinationY int32) error {
 	piece := e.Board[startingY][startingX]
 
-	if piece.Color != e.CurrentPlayerColor {
-		return fmt.Errorf("invalid move, you can only move pieces belonging to the current player")
-	}
-
 	_ = []Move{
 		{0, 1}, // Normal move for pawns
+		{0, 2}, // First move, pawn moves two steps
 
 		// Weird moves (FAAAAAAaaahhhhh)
-		{0, 2},  // First move, pawn moves two steps
 		{1, 1},  // Ampersand to the right
 		{-1, 1}, // Ampersand to the left
 	}
@@ -66,8 +68,22 @@ func (e *Engine) MovePawn(startingX, startingY, destinationX, destinationY int32
 		return fmt.Errorf("currently pawns are only allowed to move forward")
 	}
 
-	yDiff := y2 - y1
+	yDiff := int32(0)
+	switch e.CurrentPlayerColor {
+	// White moves are positive while black moves are negative
+	// White moves from a 0 -> 7 while black moves from 7 -> 0
+	case White:
+		yDiff = y2 - y1
+	case Black:
+		yDiff = y1 - y2
+	}
+
+	if yDiff == 0 {
+		return fmt.Errorf("pawn did not move")
+	}
+
 	if yDiff != 2 && yDiff != 1 {
+		fmt.Println("We are failing here ")
 		return fmt.Errorf("pawns are only allowed to move one step forward, or two steps for the first move")
 	}
 
@@ -86,7 +102,6 @@ func (e *Engine) MovePawn(startingX, startingY, destinationX, destinationY int32
 		}
 	}
 
-	// validate destination
 	if e.Board[destinationY][destinationX] != nil {
 		return fmt.Errorf("pawns cannot move to squares that have pieces")
 	}
@@ -134,8 +149,9 @@ func (e *Engine) MoveKnight() error {
 
 func (e *Engine) MoveBishop(startingX, startingY, destinationX, destinationY int32) error {
 	// Cannot move to a square that has a color similar to the current player
-	if e.Board[destinationY][destinationX] != nil && e.Board[destinationY][destinationX].Color == e.CurrentPlayerColor {
-		return fmt.Errorf("move not allowed")
+	piece := e.Board[destinationY][destinationX]
+	if piece != nil && piece.Color == e.CurrentPlayerColor {
+		return fmt.Errorf("move not allowed, destination square has current player's piece")
 	}
 
 	x1 := startingX

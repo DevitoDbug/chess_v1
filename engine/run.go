@@ -7,10 +7,9 @@ import (
 // This file contains the game loop
 
 func (e *Engine) Run() {
-	for {
-		// Render the board
-		e.RenderTerminal()
+	e.RenderTerminal()
 
+	for {
 		var input string
 
 		fmt.Println("Enter your move: ")
@@ -30,10 +29,14 @@ func (e *Engine) Run() {
 		//	-> Is the destination allowed (Not out of bound, our piece can move there, another of our piece is not there)
 		err = e.MovePiece(parsedInput)
 		if err != nil {
-			fmt.Printf("%v", err)
+			fmt.Printf("%v\n", err)
+		} else {
+			e.CurrentPlayerColor = toggleCurrentPlayer(e.CurrentPlayerColor)
 		}
 
 		fmt.Println("******************************************")
 		fmt.Println("******************************************")
+
+		e.RenderTerminal()
 	}
 }
