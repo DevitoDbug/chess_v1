@@ -86,6 +86,11 @@ func (e *Engine) MovePawn(startingX, startingY, destinationX, destinationY int32
 		}
 	}
 
+	// validate destination
+	if e.Board[destinationY][destinationX] != nil {
+		return fmt.Errorf("pawns cannot move to squares that have pieces")
+	}
+
 	e.Board[destinationY][destinationX] = e.Board[startingY][startingX]
 	e.Board[startingY][startingX] = nil
 
