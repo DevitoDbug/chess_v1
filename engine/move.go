@@ -18,6 +18,10 @@ func (e *Engine) MovePiece(input Input) error {
 
 	switch piece.Type {
 	case Pawn:
+		err := e.MovePawn(input.StartX, input.StartY, input.DestinationX, input.DestinationY)
+		if err != nil {
+			return err
+		}
 	case King:
 	case Queen:
 	case Rook:
@@ -35,8 +39,14 @@ func (e *Engine) MovePiece(input Input) error {
 
 type Move [2]int // Format is (x,y)
 
-func (e *Engine) MovePawn() error {
-	possibleMoves := []Move{
+func (e *Engine) MovePawn(startingX, startingY, destinationX, destinationY int32) error {
+	piece := e.Board[startingY][startingX]
+
+	if piece.Color != e.CurrentPlayerColor {
+		return fmt.Errorf("invalid move, you can only move pieces belonging to the current player")
+	}
+
+	_ = []Move{
 		{0, 1}, // Normal move for pawns
 
 		// Weird moves (FAAAAAAaaahhhhh)
@@ -44,7 +54,41 @@ func (e *Engine) MovePawn() error {
 		{1, 1},  // Ampersand to the right
 		{-1, 1}, // Ampersand to the left
 	}
-	_ = possibleMoves
+	// TODO: Ampersand
+
+	x1 := startingX
+	y1 := startingY
+	x2 := destinationX
+	y2 := destinationY
+
+	xDiff := x2 - x1
+	if xDiff != 0 {
+		return fmt.Errorf("currently pawns are only allowed to move forward")
+	}
+
+	yDiff := y2 - y1
+	if yDiff != 2 && yDiff != 1 {
+		return fmt.Errorf("pawns are only allowed to move one step forward, or two steps for the first move")
+	}
+
+	if yDiff == 2 {
+		switch piece.Color {
+		case White:
+			if startingY != 1 {
+				return fmt.Errorf("paws can only move two moves if it is the first move")
+			}
+		case Black:
+			if startingY != 6 {
+				return fmt.Errorf("paws can only move two moves if it is the first move")
+			}
+		default:
+			return fmt.Errorf("pawn color not recognized")
+		}
+	}
+
+	e.Board[destinationY][destinationX] = e.Board[startingY][startingX]
+	e.Board[startingY][startingX] = nil
+
 	return nil
 }
 
