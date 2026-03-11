@@ -237,20 +237,63 @@ func (e *Engine) MoveBishop(startingX, startingY, destinationX, destinationY int
 }
 
 func (e *Engine) MoveRook(startingX, startingY, destinationX, destinationY int32) error {
-	// Rooks can move in only two ways, that is horizontally and vertically.
-	// We need to validate to find out if the user is moving up down or left right.
-	// We also need to validate that there is no piece in the sliding path.
 	x1 := startingX
 	x2 := destinationX
 	y1 := startingY
 	y2 := destinationY
+	xDiff := x2 - x1
+	yDiff := y2 - y1
+
+	// Destination should not have a piece similar to current player color
+	if e.Board[destinationY][destinationX] != nil && e.Board[destinationY][destinationX].Color == e.CurrentPlayerColor {
+		return fmt.Errorf("move not allowed, rook can not attack a square that has current player's piece")
+	}
 
 	xAd := utils.AbsoluteDiff(x1, x2)
 	yAd := utils.AbsoluteDiff(y1, y2)
+	if xAd == yAd {
+		// This eliminates movement to square the piece is already in.
+		// Also eliminates diagonal movements.
+		return fmt.Errorf("move not allowed, rook can only move in straight lines horizontally or vertically")
+	}
+
 	if xAd > 0 && yAd > 0 {
 		// This should not be possible, a change in x and y at the same time
 		// means the rook did not travel in the expected moves
 		return fmt.Errorf("move not allowed, rook can only move in straight lines horizontally or vertically")
+	}
+
+	// Loop from the start to the destination and find out if there is a piece in the middle.
+	// Below are the only two possibilities, either horizontal or vertical movements.
+	if xAd > yAd {
+		//-1 is to make sure we check only up to the destination square and not the destination square itself
+		for colOffset := range xAd - 1 {
+			if xDiff > 0 {
+				// Moving to wards the right x increases
+				// The +1 is to make sure that we do not check the starting square
+				if e.Board[startingY][(startingX+1)+colOffset] != nil {
+					return fmt.Errorf("move not allowed, rook path has a piece blocking i.e (%v,%v)", startingX+1+colOffset, startingY)
+				}
+			} else {
+				// Moving to wards the left x decreases
+				// The -1 is to make sure that we do not check the starting square
+				if e.Board[startingY][(startingX-1)-colOffset] != nil {
+					return fmt.Errorf("move not allowed, rook path has a piece blocking i.e (%v,%v)", startingX+1+colOffset, startingY)
+				}
+			}
+		}
+	} else if yAd > xAd {
+		for rowOffset := range yAd - 1 {
+			if yDiff > 0 {
+				if e.Board[(startingY+1)+rowOffset][startingX] != nil {
+					return fmt.Errorf("move not allowed, rook path has a piece blocking i.e (%v,%v)", startingX, startingY+1+rowOffset)
+				}
+			} else {
+				if e.Board[(startingY-1)-rowOffset][startingX] != nil {
+					return fmt.Errorf("move not allowed, rook path has a piece blocking i.e (%v,%v)", startingX, startingY+1+rowOffset)
+				}
+			}
+		}
 	}
 
 	e.Board[destinationY][destinationX] = e.Board[startingY][startingX]
