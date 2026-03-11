@@ -209,7 +209,9 @@ func (e *Engine) MoveBishop(startingX, startingY, destinationX, destinationY int
 	// Evaluated diagonal - Basically figuring out if there is a piece along the way
 	xChange := x1 - x2
 	yChange := y1 - y2
-	for range xAd {
+	// The -1 is to make sure that we only check for piece between the staring and the destination and
+	// not the specific destination, otherwise it would be detected as a piece in the path.
+	for range xAd - 1 {
 		diagonalX := startingX
 		diagonalY := startingY
 
