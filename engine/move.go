@@ -40,12 +40,12 @@ func (e *Engine) MovePiece(input Input) error {
 		return fmt.Errorf("invalid piece provided")
 	}
 
-	// Clean up AmpersandSquare
-	if e.AmpersandSquare != nil {
-		if e.AmpersandSquare.Checked {
-			e.AmpersandSquare = nil
+	// Clean up EnpassantSquare
+	if e.EnpassantSquare != nil {
+		if e.EnpassantSquare.Checked {
+			e.EnpassantSquare = nil
 		} else {
-			e.AmpersandSquare.Checked = true
+			e.EnpassantSquare.Checked = true
 		}
 	}
 
@@ -80,18 +80,18 @@ func (e *Engine) MovePawn(startingX, startingY, destinationX, destinationY int32
 	if xAbsDiff == 1 && yAbsDiff == 1 && yDiff > 0 {
 		// yDiff check is to make sure that we are moving in the right direction,
 		// white is not moving toward 0 and black towards 7
-		isAmpersandMove := e.AmpersandSquare != nil && destinationY == e.AmpersandSquare.RowIndex && destinationX == e.AmpersandSquare.ColumnIndex
+		isEnpassantMove := e.EnpassantSquare != nil && destinationY == e.EnpassantSquare.RowIndex && destinationX == e.EnpassantSquare.ColumnIndex
 		isAttackingOpponentPiece := destinationPiece != nil && destinationPiece.Color != e.CurrentPlayerColor
-		if !isAttackingOpponentPiece && !isAmpersandMove {
+		if !isAttackingOpponentPiece && !isEnpassantMove {
 			return fmt.Errorf("player is not allowed to attack his own piece")
 		}
 
-		if isAmpersandMove {
+		if isEnpassantMove {
 			switch e.CurrentPlayerColor {
 			case White:
-				e.Board[e.AmpersandSquare.RowIndex-1][e.AmpersandSquare.ColumnIndex] = nil
+				e.Board[e.EnpassantSquare.RowIndex-1][e.EnpassantSquare.ColumnIndex] = nil
 			case Black:
-				e.Board[e.AmpersandSquare.RowIndex+1][e.AmpersandSquare.ColumnIndex] = nil
+				e.Board[e.EnpassantSquare.RowIndex+1][e.EnpassantSquare.ColumnIndex] = nil
 			}
 		}
 
@@ -120,7 +120,7 @@ func (e *Engine) MovePawn(startingX, startingY, destinationX, destinationY int32
 			if startingY != 1 {
 				return fmt.Errorf("paws can only move two moves if it is the first move")
 			}
-			e.AmpersandSquare = &Square{
+			e.EnpassantSquare = &Square{
 				RowIndex:    int32(startingY + 1),
 				ColumnIndex: startingX,
 			}
@@ -128,7 +128,7 @@ func (e *Engine) MovePawn(startingX, startingY, destinationX, destinationY int32
 			if startingY != 6 {
 				return fmt.Errorf("paws can only move two moves if it is the first move")
 			}
-			e.AmpersandSquare = &Square{
+			e.EnpassantSquare = &Square{
 				RowIndex:    int32(startingY - 1),
 				ColumnIndex: startingX,
 			}
