@@ -209,8 +209,7 @@ func (e *Engine) MoveBishop(startingX, startingY, destinationX, destinationY int
 	// Evaluated diagonal - Basically figuring out if there is a piece along the way
 	xChange := x1 - x2
 	yChange := y1 - y2
-	// The -1 is to make sure that we only check for piece between the staring and the destination and
-	// not the specific destination, otherwise it would be detected as a piece in the path.
+	// The -1 is, destination pieces should not be detected as obstacles
 	for range xAd - 1 {
 		diagonalX := startingX
 		diagonalY := startingY
@@ -268,7 +267,7 @@ func (e *Engine) MoveRook(startingX, startingY, destinationX, destinationY int32
 	// Loop from the start to the destination and find out if there is a piece in the middle.
 	// Below are the only two possibilities, either horizontal or vertical movements.
 	if xAd > yAd {
-		//-1 is to make sure we check only up to the destination square and not the destination square itself
+		//-1 is destination pieces should not be detected as obstacles
 		for colOffset := range xAd - 1 {
 			if xDiff > 0 {
 				// Moving to wards the right x increases
