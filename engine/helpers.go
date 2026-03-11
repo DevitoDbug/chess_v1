@@ -6,23 +6,31 @@ import (
 	"strings"
 )
 
-func GetRenderLetter(pieceType PieceType) string {
-	switch pieceType {
-	case Pawn:
-		return "P"
-	case Knight:
-		return "N"
-	case Bishop:
-		return "B"
-	case Rook:
-		return "R"
-	case Queen:
-		return "Q"
-	case King:
-		return "K"
-	default:
-		return ""
+var whitePieces = [...]rune{
+	Pawn:   '♙',
+	Knight: '♘',
+	Bishop: '♗',
+	Rook:   '♖',
+	Queen:  '♕',
+	King:   '♔',
+}
+
+var blackPieces = [...]rune{
+	Pawn:   '♟',
+	Knight: '♞',
+	Bishop: '♝',
+	Rook:   '♜',
+	Queen:  '♛',
+	King:   '♚',
+}
+
+func GetRenderLetter(pieceType PieceType, color PieceColor) rune {
+	if color == Black {
+		return blackPieces[pieceType]
+	} else if color == White {
+		return whitePieces[pieceType]
 	}
+	return ' '
 }
 
 func GetColorLetter(color PieceColor) string {

@@ -1,14 +1,14 @@
 package engine
 
-type PieceType string
+type PieceType int
 
 const (
-	Pawn   PieceType = "pawn"
-	Knight PieceType = "knight"
-	Bishop PieceType = "piece"
-	Rook   PieceType = "rook"
-	Queen  PieceType = "queen"
-	King   PieceType = "king"
+	Pawn PieceType = iota
+	Knight
+	Bishop
+	Rook
+	Queen
+	King
 )
 
 type PieceColor string
@@ -19,9 +19,8 @@ const (
 )
 
 type Piece struct {
-	Type         PieceType
-	Color        PieceColor
-	RenderLetter string
+	Type  PieceType
+	Color PieceColor
 }
 
 const (

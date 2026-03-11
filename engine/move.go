@@ -28,7 +28,10 @@ func (e *Engine) MovePiece(input Input) error {
 	case Queen:
 		return fmt.Errorf("queen move not implemented yet")
 	case Rook:
-		return fmt.Errorf("rook move not implemented yet")
+		err := e.MoveRook(input.StartX, input.StartY, input.DestinationX, input.DestinationY)
+		if err != nil {
+			return err
+		}
 	case Bishop:
 		err := e.MoveBishop(input.StartX, input.StartY, input.DestinationX, input.DestinationY)
 		if err != nil {
@@ -40,7 +43,7 @@ func (e *Engine) MovePiece(input Input) error {
 		return fmt.Errorf("invalid piece provided")
 	}
 
-	// Clean up EnpassantSquare
+	// Clean ups
 	if e.EnpassantSquare != nil {
 		if e.EnpassantSquare.Checked {
 			e.EnpassantSquare = nil
@@ -233,7 +236,25 @@ func (e *Engine) MoveBishop(startingX, startingY, destinationX, destinationY int
 	return nil
 }
 
-func (e *Engine) MoveRook() error {
+func (e *Engine) MoveRook(startingX, startingY, destinationX, destinationY int32) error {
+	// Rooks can move in only two ways, that is horizontally and vertically.
+	// We need to validate to find out if the user is moving up down or left right.
+	// We also need to validate that there is no piece in the sliding path.
+	x1 := startingX
+	x2 := destinationX
+	y1 := startingY
+	y2 := destinationY
+
+	xAd := utils.AbsoluteDiff(x1, x2)
+	yAd := utils.AbsoluteDiff(y1, y2)
+	if xAd > 0 && yAd > 0 {
+		// This should not be possible, a change in x and y at the same time
+		// means the rook did not travel in the expected moves
+		return fmt.Errorf("move not allowed, rook can only move in straight lines horizontally or vertically")
+	}
+
+	e.Board[destinationY][destinationX] = e.Board[startingY][startingX]
+	e.Board[startingY][startingX] = nil
 	return nil
 }
 

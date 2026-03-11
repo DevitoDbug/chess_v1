@@ -17,21 +17,21 @@ func (e *Engine) RenderTerminal() {
 		for col := range ColumnNumber {
 			piece := e.Board[row][col]
 			if piece == nil {
-				fmt.Printf("  . |")
+				fmt.Printf(" . |")
 			} else {
-				fmt.Printf(" %v%v |", GetColorLetter(piece.Color), piece.RenderLetter)
+				fmt.Printf(" %c |", GetRenderLetter(piece.Type, piece.Color))
 			}
 		}
 		fmt.Println("")
 		for range ColumnNumber {
-			fmt.Printf("------")
+			fmt.Printf("-----")
 		}
 		fmt.Println()
 	}
 
 	fmt.Printf("   |")
 	for num := range ColumnNumber {
-		fmt.Printf("%v %c  |", utils.Red, 'a'+num)
+		fmt.Printf("%v %c |", utils.Red, 'a'+num)
 	}
 	fmt.Printf("%v\n", utils.White)
 }
