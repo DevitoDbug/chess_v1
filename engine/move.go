@@ -24,6 +24,9 @@ func (e *Engine) MovePiece(input Input) error {
 			return err
 		}
 	case King:
+		// FAAAAaaaaah -> here we will have a bunch to deal with
+		// Checks
+		//
 		return fmt.Errorf("king move not implemented yet")
 	case Queen:
 		return fmt.Errorf("queen move not implemented yet")
@@ -38,7 +41,10 @@ func (e *Engine) MovePiece(input Input) error {
 			return err
 		}
 	case Knight:
-		return fmt.Errorf("night move not implemented yet")
+		err := e.MoveKnight(input.StartX, input.StartY, input.DestinationX, input.DestinationY)
+		if err != nil {
+			return err
+		}
 	default:
 		return fmt.Errorf("invalid piece provided")
 	}
@@ -167,21 +173,27 @@ func (e *Engine) MoveKing() error {
 	return nil
 }
 
-func (e *Engine) MoveKnight() error {
-	possibleMoves := []Move{
-		{-1, 2},
-		{1, 2},
-
-		{2, 1},
-		{2, -1},
-
-		{-2, 1},
-		{-2, -1},
-
-		{-1, -2},
-		{1, -2},
+func (e *Engine) MoveKnight(startingX, startingY, destinationX, destinationY int32) error {
+	if e.Board[destinationY][destinationX] != nil && e.Board[destinationY][destinationX].Color == e.CurrentPlayerColor {
+		return fmt.Errorf("move not allowed. Players cannot attack their own piece")
 	}
-	_ = possibleMoves
+
+	x1 := startingX
+	x2 := destinationX
+	y1 := startingY
+	y2 := destinationY
+
+	xAb := utils.AbsoluteDiff(x1, x2)
+	yAb := utils.AbsoluteDiff(y1, y2)
+
+	// One of the values must be a 1 and the other a 2
+	if xAb*yAb != 2 {
+		return fmt.Errorf("move not allowed")
+	}
+
+	e.Board[destinationY][destinationX] = e.Board[startingY][startingX]
+	e.Board[startingY][startingX] = nil
+
 	return nil
 }
 
@@ -197,11 +209,11 @@ func (e *Engine) MoveBishop(startingX, startingY, destinationX, destinationY int
 	y1 := startingY
 	y2 := destinationY
 
-	xAd := utils.AbsoluteDiff(x1, x2)
-	yAd := utils.AbsoluteDiff(y1, y2)
+	xAb := utils.AbsoluteDiff(x1, x2)
+	yAb := utils.AbsoluteDiff(y1, y2)
 
 	// Diagonal moves should conform to |x1-x2| == |y1-y2|
-	if xAd != yAd {
+	if xAb != yAb {
 		// Not a valid bishop move
 		return fmt.Errorf("move not allowed")
 	}
@@ -210,7 +222,7 @@ func (e *Engine) MoveBishop(startingX, startingY, destinationX, destinationY int
 	xChange := x1 - x2
 	yChange := y1 - y2
 	// The -1 is, destination pieces should not be detected as obstacles
-	for range xAd - 1 {
+	for range xAb - 1 {
 		diagonalX := startingX
 		diagonalY := startingY
 
@@ -250,15 +262,15 @@ func (e *Engine) MoveRook(startingX, startingY, destinationX, destinationY int32
 		return fmt.Errorf("move not allowed, rook can not attack a square that has current player's piece")
 	}
 
-	xAd := utils.AbsoluteDiff(x1, x2)
-	yAd := utils.AbsoluteDiff(y1, y2)
-	if xAd == yAd {
+	xAb := utils.AbsoluteDiff(x1, x2)
+	yAb := utils.AbsoluteDiff(y1, y2)
+	if xAb == yAb {
 		// This eliminates movement to square the piece is already in.
 		// Also eliminates diagonal movements.
 		return fmt.Errorf("move not allowed, rook can only move in straight lines horizontally or vertically")
 	}
 
-	if xAd > 0 && yAd > 0 {
+	if xAb > 0 && yAb > 0 {
 		// This should not be possible, a change in x and y at the same time
 		// means the rook did not travel in the expected moves
 		return fmt.Errorf("move not allowed, rook can only move in straight lines horizontally or vertically")
@@ -266,9 +278,9 @@ func (e *Engine) MoveRook(startingX, startingY, destinationX, destinationY int32
 
 	// Loop from the start to the destination and find out if there is a piece in the middle.
 	// Below are the only two possibilities, either horizontal or vertical movements.
-	if xAd > yAd {
+	if xAb > yAb {
 		//-1 is destination pieces should not be detected as obstacles
-		for colOffset := range xAd - 1 {
+		for colOffset := range xAb - 1 {
 			if xDiff > 0 {
 				// Moving to wards the right x increases
 				// The +1 is to make sure that we do not check the starting square
@@ -283,8 +295,8 @@ func (e *Engine) MoveRook(startingX, startingY, destinationX, destinationY int32
 				}
 			}
 		}
-	} else if yAd > xAd {
-		for rowOffset := range yAd - 1 {
+	} else if yAb > xAb {
+		for rowOffset := range yAb - 1 {
 			if yDiff > 0 {
 				if e.Board[(startingY+1)+rowOffset][startingX] != nil {
 					return fmt.Errorf("move not allowed, rook path has a piece blocking i.e (%v,%v)", startingX, startingY+1+rowOffset)
