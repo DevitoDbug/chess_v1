@@ -221,11 +221,11 @@ func (e *Engine) MoveBishop(startingX, startingY, destinationX, destinationY int
 	// Evaluated diagonal - Basically figuring out if there is a piece along the way
 	xChange := x1 - x2
 	yChange := y1 - y2
+	diagonalX := startingX
+	diagonalY := startingY
+
 	// The -1 is, destination pieces should not be detected as obstacles
 	for range xAb - 1 {
-		diagonalX := startingX
-		diagonalY := startingY
-
 		// Confirm that nothing is within the diagonal
 		if xChange < 0 {
 			diagonalX++
