@@ -25,9 +25,10 @@ var blackPieces = [...]rune{
 }
 
 func GetRenderLetter(pieceType PieceType, color PieceColor) rune {
-	if color == Black {
+	switch color {
+	case Black:
 		return blackPieces[pieceType]
-	} else if color == White {
+	case White:
 		return whitePieces[pieceType]
 	}
 	return ' '
