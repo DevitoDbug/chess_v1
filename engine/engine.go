@@ -11,11 +11,18 @@ type Engine struct {
 	Board              [8][8]*Piece
 	CurrentPlayerColor PieceColor
 	EnpassantSquare    *Square
+	castleRights       CastleRights
 }
 
 func NewEngine() *Engine {
 	engine := &Engine{
 		CurrentPlayerColor: White,
+		castleRights: CastleRights{
+			WhiteKingSideCastle:  true,
+			WhiteQueenSideCastle: true,
+			BlackKingSideCastle:  true,
+			BlackQueenSideCastle: true,
+		},
 	}
 
 	engine.Init() // Fucking annoying to export initializations

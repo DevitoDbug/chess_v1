@@ -33,3 +33,10 @@ type Square struct {
 	ColumnIndex int32
 	Checked     bool
 }
+
+type CastleRights struct {
+	WhiteKingSideCastle  bool
+	WhiteQueenSideCastle bool
+	BlackKingSideCastle  bool
+	BlackQueenSideCastle bool
+}

@@ -164,9 +164,18 @@ func (e *Engine) MoveKing(startingX, startingY, destinationX, destinationY int32
 	if err != nil {
 		return err
 	}
-	// TODO: castling not done yet
 
 	e.Board[destinationY][destinationX] = e.Board[startingY][startingX]
+	// Disable castling for the corresponding color side
+	switch e.Board[startingY][startingX].Color {
+	case White:
+		e.castleRights.WhiteKingSideCastle = false
+		e.castleRights.WhiteQueenSideCastle = false
+	case Black:
+		e.castleRights.BlackKingSideCastle = false
+		e.castleRights.BlackQueenSideCastle = false
+	}
+
 	e.Board[startingY][startingX] = nil
 	return nil
 }
@@ -214,6 +223,17 @@ func (e *Engine) MoveRook(startingX, startingY, destinationX, destinationY int32
 
 	e.Board[destinationY][destinationX] = e.Board[startingY][startingX]
 	e.Board[startingY][startingX] = nil
+
+	// Rook move from home square should warrant a casting right elimination of that side of the king
+	if startingX == 0 && startingY == 0 {
+		e.castleRights.WhiteQueenSideCastle = false
+	} else if startingX == 7 && startingY == 0 {
+		e.castleRights.WhiteKingSideCastle = false
+	} else if startingX == 7 && startingY == 7 {
+		e.castleRights.BlackKingSideCastle = false
+	} else if startingX == 0 && startingY == 7 {
+		e.castleRights.BlackQueenSideCastle = false
+	}
 	return nil
 }
 
