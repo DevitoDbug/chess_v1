@@ -122,7 +122,7 @@ func (e *Engine) isDiagonalValidSlidingMove(startingX, startingY, destinationX, 
 	return nil
 }
 
-func (e *Engine) IsValidKingMove(startingX, startingY, destinationX, destinationY int32) error {
+func (e *Engine) isValidKingMove(startingX, startingY, destinationX, destinationY int32) error {
 	// Cannot move to a square that has a color similar to the current player
 	piece := e.Board[destinationY][destinationX]
 	if piece != nil && piece.Color == e.CurrentPlayerColor {
@@ -144,14 +144,86 @@ func (e *Engine) IsValidKingMove(startingX, startingY, destinationX, destination
 		return fmt.Errorf("move not allowed, kings can only move one square unless castling")
 	}
 
-	if e.IsSquareAttacked(destinationX, destinationY, toggleCurrentPlayer(e.CurrentPlayerColor)) {
+	if e.isSquareAttacked(destinationX, destinationY, toggleCurrentPlayer(e.CurrentPlayerColor)) {
 		return fmt.Errorf("move not allowed, square is attacked")
 	}
 
 	return nil
 }
 
-func (e *Engine) IsSquareAttacked(sqX, sqY int32, attackingColor PieceColor) bool {
+func (e *Engine) isCastlingMove(startX, startY, destX, destY int32) bool {
+	piece := e.Board[startY][startX]
+	if piece == nil || piece.Type != King {
+		return false
+	}
+
+	color := piece.Color
+	opponent := toggleCurrentPlayer(color)
+
+	// King must start on original square
+	if color == White && (startX != 4 || startY != 0) {
+		return false
+	}
+
+	if color == Black && (startX != 4 || startY != 7) {
+		return false
+	}
+
+	// Cannot castle while in check
+	if e.isSquareAttacked(startX, startY, opponent) {
+		return false
+	}
+
+	// Kingside
+	if destX == 6 {
+		if color == White && !e.castleRights.WhiteKingSideCastle {
+			return false
+		}
+
+		if color == Black && !e.castleRights.BlackKingSideCastle {
+			return false
+		}
+
+		if e.Board[startY][5] != nil || e.Board[startY][6] != nil {
+			return false
+		}
+
+		if e.isSquareAttacked(5, startY, opponent) ||
+			e.isSquareAttacked(6, startY, opponent) {
+			return false
+		}
+
+		return true
+	}
+
+	// Queenside
+	if destX == 2 {
+		if color == White && !e.castleRights.WhiteQueenSideCastle {
+			return false
+		}
+
+		if color == Black && !e.castleRights.BlackQueenSideCastle {
+			return false
+		}
+
+		if e.Board[startY][1] != nil ||
+			e.Board[startY][2] != nil ||
+			e.Board[startY][3] != nil {
+			return false
+		}
+
+		if e.isSquareAttacked(3, startY, opponent) ||
+			e.isSquareAttacked(2, startY, opponent) {
+			return false
+		}
+
+		return true
+	}
+
+	return false
+}
+
+func (e *Engine) isSquareAttacked(sqX, sqY int32, attackingColor PieceColor) bool {
 	if e.isPawnAttackingSquare(sqX, sqY, attackingColor) {
 		return true
 	}

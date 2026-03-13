@@ -66,12 +66,12 @@ func (e *Engine) MovePiece(input Input) error {
 
 type Move [2]int // Format is (x,y)
 
-func (e *Engine) MovePawn(startingX, startingY, destinationX, destinationY int32) error {
-	startingPiece := e.Board[startingY][startingX]
+func (e *Engine) MovePawn(startX, startY, destinationX, destinationY int32) error {
+	startPiece := e.Board[startY][startX]
 	destinationPiece := e.Board[destinationY][destinationX]
 
-	x1 := startingX
-	y1 := startingY
+	x1 := startX
+	y1 := startY
 	x2 := destinationX
 	y2 := destinationY
 	xAbsDiff := utils.AbsoluteDiff(x1, x2)
@@ -107,8 +107,8 @@ func (e *Engine) MovePawn(startingX, startingY, destinationX, destinationY int32
 			}
 		}
 
-		e.Board[destinationY][destinationX] = e.Board[startingY][startingX]
-		e.Board[startingY][startingX] = nil
+		e.Board[destinationY][destinationX] = e.Board[startY][startX]
+		e.Board[startY][startX] = nil
 		return nil
 	}
 
@@ -125,24 +125,24 @@ func (e *Engine) MovePawn(startingX, startingY, destinationX, destinationY int32
 	}
 
 	if yDiff == 2 {
-		switch startingPiece.Color {
-		// Moving two steps creates possibility for ampersand in the position (starting position + 1) or
+		switch startPiece.Color {
+		// Moving two steps creates possibility for ampersand in the position (start position + 1) or
 		// (destination position -1 ) from whites perspective
 		case White:
-			if startingY != 1 {
+			if startY != 1 {
 				return fmt.Errorf("paws can only move two moves if it is the first move")
 			}
 			e.EnpassantSquare = &Square{
-				RowIndex:    int32(startingY + 1),
-				ColumnIndex: startingX,
+				RowIndex:    int32(startY + 1),
+				ColumnIndex: startX,
 			}
 		case Black:
-			if startingY != 6 {
+			if startY != 6 {
 				return fmt.Errorf("paws can only move two moves if it is the first move")
 			}
 			e.EnpassantSquare = &Square{
-				RowIndex:    int32(startingY - 1),
-				ColumnIndex: startingX,
+				RowIndex:    int32(startY - 1),
+				ColumnIndex: startX,
 			}
 		default:
 			return fmt.Errorf("pawn color not recognized")
@@ -153,21 +153,41 @@ func (e *Engine) MovePawn(startingX, startingY, destinationX, destinationY int32
 		return fmt.Errorf("pawns cannot move to squares that have pieces")
 	}
 
-	e.Board[destinationY][destinationX] = e.Board[startingY][startingX]
-	e.Board[startingY][startingX] = nil
+	e.Board[destinationY][destinationX] = e.Board[startY][startX]
+	e.Board[startY][startX] = nil
 
 	return nil
 }
 
-func (e *Engine) MoveKing(startingX, startingY, destinationX, destinationY int32) error {
-	err := e.IsValidKingMove(startingX, startingY, destinationX, destinationY)
-	if err != nil {
-		return err
+func (e *Engine) MoveKing(startX, startY, destinationX, destinationY int32) error {
+	piece := e.Board[startY][startX]
+	if piece == nil || piece.Type != King {
+		return fmt.Errorf("no king at starting square")
 	}
+	color := e.Board[startY][startX].Color
 
-	e.Board[destinationY][destinationX] = e.Board[startingY][startingX]
+	if e.isCastlingMove(startX, startY, destinationX, destinationY) {
+		// Move the king
+		e.Board[destinationY][destinationX] = e.Board[startY][startX]
+		e.Board[startY][startX] = nil
+
+		// Move rook
+		if destinationX > startX { // King-side
+			e.Board[startY][destinationX-1] = e.Board[startY][7]
+			e.Board[startY][7] = nil
+		} else { // Queen-side
+			e.Board[startY][destinationX+1] = e.Board[startY][0]
+			e.Board[startY][0] = nil
+		}
+	} else {
+		if err := e.isValidKingMove(startX, startY, destinationX, destinationY); err != nil {
+			return err
+		}
+		e.Board[destinationY][destinationX] = e.Board[startY][startX]
+		e.Board[startY][startX] = nil
+	}
 	// Disable castling for the corresponding color side
-	switch e.Board[startingY][startingX].Color {
+	switch color {
 	case White:
 		e.castleRights.WhiteKingSideCastle = false
 		e.castleRights.WhiteQueenSideCastle = false
@@ -176,18 +196,17 @@ func (e *Engine) MoveKing(startingX, startingY, destinationX, destinationY int32
 		e.castleRights.BlackQueenSideCastle = false
 	}
 
-	e.Board[startingY][startingX] = nil
 	return nil
 }
 
-func (e *Engine) MoveKnight(startingX, startingY, destinationX, destinationY int32) error {
+func (e *Engine) MoveKnight(startX, startY, destinationX, destinationY int32) error {
 	if e.Board[destinationY][destinationX] != nil && e.Board[destinationY][destinationX].Color == e.CurrentPlayerColor {
 		return fmt.Errorf("move not allowed. Players cannot attack their own piece")
 	}
 
-	x1 := startingX
+	x1 := startX
 	x2 := destinationX
-	y1 := startingY
+	y1 := startY
 	y2 := destinationY
 
 	xAb := utils.AbsoluteDiff(x1, x2)
@@ -198,55 +217,55 @@ func (e *Engine) MoveKnight(startingX, startingY, destinationX, destinationY int
 		return fmt.Errorf("move not allowed")
 	}
 
-	e.Board[destinationY][destinationX] = e.Board[startingY][startingX]
-	e.Board[startingY][startingX] = nil
+	e.Board[destinationY][destinationX] = e.Board[startY][startX]
+	e.Board[startY][startX] = nil
 
 	return nil
 }
 
-func (e *Engine) MoveBishop(startingX, startingY, destinationX, destinationY int32) error {
-	err := e.isDiagonalValidSlidingMove(startingX, startingY, destinationX, destinationY)
+func (e *Engine) MoveBishop(startX, startY, destinationX, destinationY int32) error {
+	err := e.isDiagonalValidSlidingMove(startX, startY, destinationX, destinationY)
 	if err != nil {
 		return err
 	}
 
-	e.Board[destinationY][destinationX] = e.Board[startingY][startingX]
-	e.Board[startingY][startingX] = nil
+	e.Board[destinationY][destinationX] = e.Board[startY][startX]
+	e.Board[startY][startX] = nil
 	return nil
 }
 
-func (e *Engine) MoveRook(startingX, startingY, destinationX, destinationY int32) error {
-	err := e.isStraightValidSlidingMove(startingX, startingY, destinationX, destinationY)
+func (e *Engine) MoveRook(startX, startY, destinationX, destinationY int32) error {
+	err := e.isStraightValidSlidingMove(startX, startY, destinationX, destinationY)
 	if err != nil {
 		return err
 	}
 
-	e.Board[destinationY][destinationX] = e.Board[startingY][startingX]
-	e.Board[startingY][startingX] = nil
+	e.Board[destinationY][destinationX] = e.Board[startY][startX]
+	e.Board[startY][startX] = nil
 
 	// Rook move from home square should warrant a casting right elimination of that side of the king
-	if startingX == 0 && startingY == 0 {
+	if startX == 0 && startY == 0 {
 		e.castleRights.WhiteQueenSideCastle = false
-	} else if startingX == 7 && startingY == 0 {
+	} else if startX == 7 && startY == 0 {
 		e.castleRights.WhiteKingSideCastle = false
-	} else if startingX == 7 && startingY == 7 {
+	} else if startX == 7 && startY == 7 {
 		e.castleRights.BlackKingSideCastle = false
-	} else if startingX == 0 && startingY == 7 {
+	} else if startX == 0 && startY == 7 {
 		e.castleRights.BlackQueenSideCastle = false
 	}
 	return nil
 }
 
-func (e *Engine) MoveQueen(startingX, startingY, destinationX, destinationY int32) error {
+func (e *Engine) MoveQueen(startX, startY, destinationX, destinationY int32) error {
 	// A queen move is just rook + bishop moves
-	if err := e.isDiagonalValidSlidingMove(startingX, startingY, destinationX, destinationY); err != nil {
-		err = e.isStraightValidSlidingMove(startingX, startingY, destinationX, destinationY)
+	if err := e.isDiagonalValidSlidingMove(startX, startY, destinationX, destinationY); err != nil {
+		err = e.isStraightValidSlidingMove(startX, startY, destinationX, destinationY)
 		if err != nil {
 			return fmt.Errorf("move not allowed")
 		}
 	}
 
-	e.Board[destinationY][destinationX] = e.Board[startingY][startingX]
-	e.Board[startingY][startingX] = nil
+	e.Board[destinationY][destinationX] = e.Board[startY][startX]
+	e.Board[startY][startX] = nil
 	return nil
 }
