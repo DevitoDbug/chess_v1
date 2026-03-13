@@ -27,6 +27,8 @@ func (e *Engine) MovePiece(input Input) error {
 		// FAAAAaaaaah -> here we will have a bunch to deal with
 		// Checks
 		//
+		// Normal king move one square in all directions is allowed as a king move
+
 		return fmt.Errorf("king move not implemented yet")
 	case Queen:
 		err := e.MoveQueen(input.StartX, input.StartY, input.DestinationX, input.DestinationY)

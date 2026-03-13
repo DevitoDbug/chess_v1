@@ -12,7 +12,7 @@ func (e *Engine) Run() {
 	for {
 		var input string
 
-		fmt.Println("Enter your move: ")
+		fmt.Printf("Enter your move(%v)\n: ", e.CurrentPlayerColor)
 		_, err := fmt.Scanln(&input)
 		if err != nil {
 			fmt.Println("Invalid value entered")

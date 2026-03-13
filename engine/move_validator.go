@@ -6,6 +6,10 @@ import (
 	"github.com/DevitoDbug/chess_v1/utils"
 )
 
+func (e *Engine) isInsideBoard(x, y int32) bool {
+	return x >= 0 && y >= 0 && x <= 7 && y <= 7
+}
+
 func (e *Engine) isStraightValidSlidingMove(startingX, startingY, destinationX, destinationY int32) error {
 	x1 := startingX
 	x2 := destinationX
@@ -116,4 +120,145 @@ func (e *Engine) isDiagonalValidSlidingMove(startingX, startingY, destinationX, 
 	}
 
 	return nil
+}
+
+func (e *Engine) IsOneStepMove(startingX, startingY, destinationX, destinationY int32) error {
+	// Cannot move to a square that has a color similar to the current player
+	piece := e.Board[destinationY][destinationX]
+	if piece != nil && piece.Color == e.CurrentPlayerColor {
+		return fmt.Errorf("move not allowed, destination square has current player's piece")
+	}
+
+	x1 := startingX
+	x2 := destinationX
+	y1 := startingY
+	y2 := destinationY
+
+	xAb := utils.AbsoluteDiff(x1, x2)
+	yAb := utils.AbsoluteDiff(y1, y2)
+	_ = xAb
+	_ = yAb
+
+	return nil
+}
+
+func (e *Engine) IsSquareAttacked(sqX, sqY int32, attackingColor PieceColor) bool {
+	if e.isPawnAttackingSquare(sqX, sqY, attackingColor) {
+		return true
+	}
+	if e.isDiagonalAttackingSquare(sqX, sqY, attackingColor) {
+		return true
+	}
+	if e.isNightAttackingSquare(sqX, sqY, attackingColor) {
+		return true
+	}
+	if e.isStraightPathAttackingSquare(sqX, sqY, attackingColor) {
+		return true
+	}
+
+	return false
+}
+
+func (e *Engine) isPawnAttackingSquare(sqX, sqY int32, attackingColor PieceColor) bool {
+	switch attackingColor {
+	case Black: // Is black attacking the square (sqX, sqY)
+		topLeftX := sqX - 1
+		topLeftY := sqY + 1
+		if e.isInsideBoard(topLeftX, topLeftY) {
+			piece := e.Board[topLeftY][topLeftX]
+			if piece != nil && piece.Color == attackingColor && piece.Type == Pawn {
+				return true
+			}
+		}
+
+		topRightX := sqX + 1
+		topRightY := sqY + 1
+		if e.isInsideBoard(topRightX, topRightY) {
+			piece := e.Board[topRightY][topRightX]
+			if piece != nil && piece.Color == attackingColor && piece.Type == Pawn {
+				return true
+			}
+		}
+	case White: // Is white attacking the square (sqX, sqY)
+		bottomLeftX := sqX - 1
+		bottomLeftY := sqY - 1
+		if e.isInsideBoard(bottomLeftX, bottomLeftY) {
+			piece := e.Board[bottomLeftY][bottomLeftX]
+			if piece != nil && piece.Color == attackingColor && piece.Type == Pawn {
+				return true
+			}
+		}
+
+		bottomRightX := sqX + 1
+		bottomRightY := sqY - 1
+		if e.isInsideBoard(bottomRightX, bottomRightY) {
+			piece := e.Board[bottomRightY][bottomRightX]
+			if piece != nil && piece.Color == attackingColor && piece.Type == Pawn {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
+func (e *Engine) isDiagonalAttackingSquare(sqX, sqY int32, attackingColor PieceColor) bool {
+	diagonals := [4][2]int32{
+		{1, 1},
+		{-1, 1},
+		{-1, -1},
+		{1, -1},
+	}
+
+	for _, d := range diagonals {
+		if e.scanDiagonal(sqX, sqY, d[0], d[1], attackingColor) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (e *Engine) isNightAttackingSquare(sqX, sqY int32, attackingColor PieceColor) bool {
+	nightMoves := [8][2]int32{
+		{1, 2},
+		{-1, 2},
+		{1, -2},
+		{-1, -2},
+		{2, 1},
+		{-2, 1},
+		{2, -1},
+		{-2, -1},
+	}
+
+	for _, d := range nightMoves {
+		x := sqX + d[0]
+		y := sqY + d[1]
+		if !e.isInsideBoard(x, y) {
+			continue
+		}
+		piece := e.Board[y][x]
+		if piece != nil && piece.Color == attackingColor && piece.Type == Knight {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (e *Engine) isStraightPathAttackingSquare(sqX, sqY int32, attackingColor PieceColor) bool {
+	straightPaths := [4][2]int32{
+		{0, 1},
+		{1, 0},
+		{0, -1},
+		{-1, 0},
+	}
+
+	for _, d := range straightPaths {
+		if e.scanStraightPath(sqX, sqY, d[0], d[1], attackingColor) {
+			return true
+		}
+	}
+
+	return false
 }
