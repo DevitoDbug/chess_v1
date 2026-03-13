@@ -122,7 +122,7 @@ func (e *Engine) isDiagonalValidSlidingMove(startingX, startingY, destinationX, 
 	return nil
 }
 
-func (e *Engine) IsOneStepMove(startingX, startingY, destinationX, destinationY int32) error {
+func (e *Engine) IsValidKingMove(startingX, startingY, destinationX, destinationY int32) error {
 	// Cannot move to a square that has a color similar to the current player
 	piece := e.Board[destinationY][destinationX]
 	if piece != nil && piece.Color == e.CurrentPlayerColor {
@@ -138,6 +138,15 @@ func (e *Engine) IsOneStepMove(startingX, startingY, destinationX, destinationY 
 	yAb := utils.AbsoluteDiff(y1, y2)
 	_ = xAb
 	_ = yAb
+
+	// None castle move
+	if max(xAb, yAb) > 1 {
+		return fmt.Errorf("move not allowed, kings can only move one square unless castling")
+	}
+
+	if e.IsSquareAttacked(destinationX, destinationY, toggleCurrentPlayer(e.CurrentPlayerColor)) {
+		return fmt.Errorf("move not allowed, square is attacked")
+	}
 
 	return nil
 }

@@ -24,12 +24,10 @@ func (e *Engine) MovePiece(input Input) error {
 			return err
 		}
 	case King:
-		// FAAAAaaaaah -> here we will have a bunch to deal with
-		// Checks
-		//
-		// Normal king move one square in all directions is allowed as a king move
-
-		return fmt.Errorf("king move not implemented yet")
+		err := e.MoveKing(input.StartX, input.StartY, input.DestinationX, input.DestinationY)
+		if err != nil {
+			return err
+		}
 	case Queen:
 		err := e.MoveQueen(input.StartX, input.StartY, input.DestinationX, input.DestinationY)
 		if err != nil {
@@ -161,21 +159,15 @@ func (e *Engine) MovePawn(startingX, startingY, destinationX, destinationY int32
 	return nil
 }
 
-func (e *Engine) MoveKing() error {
-	possibleMoves := []Move{
-		{0, 1},
-		{0, -1},
-		{-1, 0},
-		{1, 0},
-
-		// Diagonals
-		{1, 1},
-		{-1, 1},
-		{-1, -1},
-		{1, -1},
+func (e *Engine) MoveKing(startingX, startingY, destinationX, destinationY int32) error {
+	err := e.IsValidKingMove(startingX, startingY, destinationX, destinationY)
+	if err != nil {
+		return err
 	}
+	// TODO: castling not done yet
 
-	_ = possibleMoves
+	e.Board[destinationY][destinationX] = e.Board[startingY][startingX]
+	e.Board[startingY][startingX] = nil
 	return nil
 }
 
