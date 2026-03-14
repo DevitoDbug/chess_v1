@@ -40,3 +40,16 @@ type CastleRights struct {
 	BlackKingSideCastle  bool
 	BlackQueenSideCastle bool
 }
+
+type Move struct {
+	FromX int32
+	FromY int32
+	ToX   int32
+	ToY   int32
+
+	CapturedPiece *Piece
+
+	IsEnpassant  bool
+	IsCastling   bool
+	IsPromortion bool
+}

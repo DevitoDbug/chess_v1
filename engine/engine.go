@@ -12,6 +12,7 @@ type Engine struct {
 	CurrentPlayerColor PieceColor
 	EnpassantSquare    *Square
 	castleRights       CastleRights
+	MoveStack          []Move
 }
 
 func NewEngine() *Engine {
