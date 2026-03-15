@@ -8,6 +8,9 @@ import (
 
 func (e *Engine) MovePawn(startX, startY, destinationX, destinationY int32) (Move, error) {
 	move := Move{}
+	move.PreviousEnpassantState = e.EnpassantSquare
+	move.PreviousCastlingState = e.castleRights
+
 	startPiece := e.Board[startY][startX]
 	destinationPiece := e.Board[destinationY][destinationX]
 
@@ -29,7 +32,7 @@ func (e *Engine) MovePawn(startX, startY, destinationX, destinationY int32) (Mov
 		yDiff = y1 - y2
 	}
 
-	// Capture piece or en peasant
+	// Capture piece or enpassant
 	if xAbsDiff == 1 && yAbsDiff == 1 && yDiff > 0 {
 		// yDiff check is to make sure that we are moving in the right direction,
 		// white is not moving toward 0 and black towards 7
@@ -75,7 +78,7 @@ func (e *Engine) MovePawn(startX, startY, destinationX, destinationY int32) (Mov
 
 	if yDiff == 2 {
 		switch startPiece.Color {
-		// Moving two steps creates possibility for En peasant in the position (start position + 1) or
+		// Moving two steps creates possibility for enpassant in the position (start position + 1) or
 		// (destination position -1 ) from whites perspective
 		case White:
 			if startY != 1 {
@@ -114,6 +117,9 @@ func (e *Engine) MovePawn(startX, startY, destinationX, destinationY int32) (Mov
 
 func (e *Engine) MoveKing(startX, startY, destinationX, destinationY int32) (Move, error) {
 	move := Move{}
+	move.PreviousEnpassantState = e.EnpassantSquare
+	move.PreviousCastlingState = e.castleRights
+
 	destinationPiece := e.Board[destinationY][destinationX]
 	startPiece := e.Board[startY][startX]
 	if startPiece == nil || startPiece.Type != King {
@@ -161,6 +167,9 @@ func (e *Engine) MoveKing(startX, startY, destinationX, destinationY int32) (Mov
 
 func (e *Engine) MoveQueen(startX, startY, destinationX, destinationY int32) (Move, error) {
 	move := Move{}
+	move.PreviousEnpassantState = e.EnpassantSquare
+	move.PreviousCastlingState = e.castleRights
+
 	destinationPiece := e.Board[destinationY][destinationX]
 
 	// A queen move is just rook + bishop moves
@@ -184,6 +193,9 @@ func (e *Engine) MoveQueen(startX, startY, destinationX, destinationY int32) (Mo
 
 func (e *Engine) MoveKnight(startX, startY, destinationX, destinationY int32) (Move, error) {
 	move := Move{}
+	move.PreviousEnpassantState = e.EnpassantSquare
+	move.PreviousCastlingState = e.castleRights
+
 	destinationPiece := e.Board[destinationY][destinationX]
 	if destinationPiece != nil && destinationPiece.Color == e.CurrentPlayerColor {
 		return move, fmt.Errorf("move not allowed. Players cannot attack their own piece")
@@ -215,6 +227,9 @@ func (e *Engine) MoveKnight(startX, startY, destinationX, destinationY int32) (M
 
 func (e *Engine) MoveBishop(startX, startY, destinationX, destinationY int32) (Move, error) {
 	move := Move{}
+	move.PreviousEnpassantState = e.EnpassantSquare
+	move.PreviousCastlingState = e.castleRights
+
 	destinationPiece := e.Board[destinationY][destinationX]
 
 	err := e.isDiagonalValidSlidingMove(startX, startY, destinationX, destinationY)
@@ -235,6 +250,9 @@ func (e *Engine) MoveBishop(startX, startY, destinationX, destinationY int32) (M
 
 func (e *Engine) MoveRook(startX, startY, destinationX, destinationY int32) (Move, error) {
 	move := Move{}
+	move.PreviousEnpassantState = e.EnpassantSquare
+	move.PreviousCastlingState = e.castleRights
+
 	destinationPiece := e.Board[destinationY][destinationX]
 
 	err := e.isStraightValidSlidingMove(startX, startY, destinationX, destinationY)
