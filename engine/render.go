@@ -15,7 +15,7 @@ func (e *Engine) RenderTerminal() {
 		fmt.Printf("%v %v", utils.Red, row+1)
 		fmt.Printf("%v ", utils.White)
 		for col := range ColumnNumber {
-			piece := e.Board[row][col]
+			piece := e.board[row][col]
 			if piece == nil {
 				fmt.Printf(" . ")
 			} else {

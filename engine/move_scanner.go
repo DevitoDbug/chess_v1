@@ -9,7 +9,7 @@ func (e *Engine) scanDiagonal(sqx, sqy, dx, dy int32, attackingColor PieceColor)
 	startingY := sqy + dy
 
 	for e.isInsideBoard(startingX, startingY) {
-		piece := e.Board[startingY][startingX]
+		piece := e.board[startingY][startingX]
 		if piece != nil {
 			if piece.Color == attackingColor && (piece.Type == Bishop || piece.Type == Queen) {
 				return true
@@ -35,7 +35,7 @@ func (e *Engine) scanStraightPath(sqx, sqy, dx, dy int32, attackingColor PieceCo
 	startingY := sqy + dy
 
 	for e.isInsideBoard(startingX, startingY) {
-		piece := e.Board[startingY][startingX]
+		piece := e.board[startingY][startingX]
 		if piece != nil {
 			if piece.Color == attackingColor && (piece.Type == Rook || piece.Type == Queen) {
 				return true

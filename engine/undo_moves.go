@@ -3,12 +3,12 @@ package engine
 import "fmt"
 
 func (e *Engine) UndoMove(move Move) error {
-	if e.Board[move.FromY][move.FromX] != nil || e.Board[move.ToY][move.ToX] == nil {
+	if e.board[move.FromY][move.FromX] != nil || e.board[move.ToY][move.ToX] == nil {
 		return fmt.Errorf("piece not found for either the destination or the start insinuated by the move claim")
 	}
-	pieceMoved := e.Board[move.ToY][move.ToX]
-	e.Board[move.FromY][move.FromX] = pieceMoved
-	e.Board[move.ToY][move.ToX] = nil
+	pieceMoved := e.board[move.ToY][move.ToX]
+	e.board[move.FromY][move.FromX] = pieceMoved
+	e.board[move.ToY][move.ToX] = nil
 
 	// Check if it was an enpassant if it was we need to restore the piece that was taken out  of the board
 	if move.IsEnpassant && move.CapturedPiece != nil {
@@ -19,14 +19,14 @@ func (e *Engine) UndoMove(move Move) error {
 		case Black:
 			y = move.ToY + 1
 		}
-		e.Board[y][move.ToX] = move.CapturedPiece
+		e.board[y][move.ToX] = move.CapturedPiece
 
 	} else if move.CapturedPiece != nil {
-		e.Board[move.ToY][move.ToX] = move.CapturedPiece
+		e.board[move.ToY][move.ToX] = move.CapturedPiece
 	}
 
 	if move.IsPromotion {
-		e.Board[move.FromY][move.FromX].Type = Pawn
+		e.board[move.FromY][move.FromX].Type = Pawn
 	}
 
 	if move.IsCastling {
@@ -48,16 +48,16 @@ func (e *Engine) UndoMove(move Move) error {
 		}
 
 		// Confirm rook is at the position should be after a castling happens
-		rook := e.Board[rookY][rookPosX]
+		rook := e.board[rookY][rookPosX]
 		if rook == nil {
 			return fmt.Errorf("invalid undo move, king castling did not place rook in the right position")
 		}
 
-		e.Board[rookY][rookOrigPosX] = rook
-		e.Board[rookY][rookPosX] = nil
+		e.board[rookY][rookOrigPosX] = rook
+		e.board[rookY][rookPosX] = nil
 	}
 
-	e.EnpassantSquare = move.PreviousEnpassantState
+	e.enpassantSquare = move.PreviousEnpassantState
 	e.castleRights = move.PreviousCastlingState
 	return nil
 }

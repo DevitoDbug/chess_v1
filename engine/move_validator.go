@@ -19,7 +19,7 @@ func (e *Engine) isStraightValidSlidingMove(startingX, startingY, destinationX, 
 	yDiff := y2 - y1
 
 	// Destination should not have a piece similar to current player color
-	if e.Board[destinationY][destinationX] != nil && e.Board[destinationY][destinationX].Color == e.CurrentPlayerColor {
+	if e.board[destinationY][destinationX] != nil && e.board[destinationY][destinationX].Color == e.currentPlayerColor {
 		return fmt.Errorf("move not allowed, piece can not attack a square that has current player's piece")
 	}
 
@@ -45,13 +45,13 @@ func (e *Engine) isStraightValidSlidingMove(startingX, startingY, destinationX, 
 			if xDiff > 0 {
 				// Moving to wards the right x increases
 				// The +1 is to make sure that we do not check the starting square
-				if e.Board[startingY][(startingX+1)+colOffset] != nil {
+				if e.board[startingY][(startingX+1)+colOffset] != nil {
 					return fmt.Errorf("move not allowed, piece path has another piece blocking i.e (%v,%v)", startingX+1+colOffset, startingY)
 				}
 			} else {
 				// Moving to wards the left x decreases
 				// The -1 is to make sure that we do not check the starting square
-				if e.Board[startingY][(startingX-1)-colOffset] != nil {
+				if e.board[startingY][(startingX-1)-colOffset] != nil {
 					return fmt.Errorf("move not allowed, piece path has another piece blocking i.e (%v,%v)", startingX+1+colOffset, startingY)
 				}
 			}
@@ -59,11 +59,11 @@ func (e *Engine) isStraightValidSlidingMove(startingX, startingY, destinationX, 
 	} else if yAb > xAb {
 		for rowOffset := range yAb - 1 {
 			if yDiff > 0 {
-				if e.Board[(startingY+1)+rowOffset][startingX] != nil {
+				if e.board[(startingY+1)+rowOffset][startingX] != nil {
 					return fmt.Errorf("move not allowed, piece path has another piece blocking i.e (%v,%v)", startingX, startingY+1+rowOffset)
 				}
 			} else {
-				if e.Board[(startingY-1)-rowOffset][startingX] != nil {
+				if e.board[(startingY-1)-rowOffset][startingX] != nil {
 					return fmt.Errorf("move not allowed, piece path has another piece blocking i.e (%v,%v)", startingX, startingY+1+rowOffset)
 				}
 			}
@@ -74,8 +74,8 @@ func (e *Engine) isStraightValidSlidingMove(startingX, startingY, destinationX, 
 
 func (e *Engine) isDiagonalValidSlidingMove(startingX, startingY, destinationX, destinationY int32) error {
 	// Cannot move to a square that has a color similar to the current player
-	piece := e.Board[destinationY][destinationX]
-	if piece != nil && piece.Color == e.CurrentPlayerColor {
+	piece := e.board[destinationY][destinationX]
+	if piece != nil && piece.Color == e.currentPlayerColor {
 		return fmt.Errorf("move not allowed, destination square has current player's piece")
 	}
 
@@ -114,7 +114,7 @@ func (e *Engine) isDiagonalValidSlidingMove(startingX, startingY, destinationX, 
 			diagonalY--
 		}
 
-		if e.Board[diagonalY][diagonalX] != nil {
+		if e.board[diagonalY][diagonalX] != nil {
 			return fmt.Errorf("move not allowed. There is another piece blocking the diagonal i.e at index (%v,%v)", diagonalX, diagonalY)
 		}
 	}
@@ -124,8 +124,8 @@ func (e *Engine) isDiagonalValidSlidingMove(startingX, startingY, destinationX, 
 
 func (e *Engine) isValidKingMove(startingX, startingY, destinationX, destinationY int32) error {
 	// Cannot move to a square that has a color similar to the current player
-	piece := e.Board[destinationY][destinationX]
-	if piece != nil && piece.Color == e.CurrentPlayerColor {
+	piece := e.board[destinationY][destinationX]
+	if piece != nil && piece.Color == e.currentPlayerColor {
 		return fmt.Errorf("move not allowed, destination square has current player's piece")
 	}
 
@@ -144,7 +144,7 @@ func (e *Engine) isValidKingMove(startingX, startingY, destinationX, destination
 		return fmt.Errorf("move not allowed, kings can only move one square unless castling")
 	}
 
-	if e.isSquareAttacked(destinationX, destinationY, toggleCurrentPlayer(e.CurrentPlayerColor)) {
+	if e.isSquareAttacked(destinationX, destinationY, toggleCurrentPlayer(e.currentPlayerColor)) {
 		return fmt.Errorf("move not allowed, square is attacked")
 	}
 
@@ -152,7 +152,7 @@ func (e *Engine) isValidKingMove(startingX, startingY, destinationX, destination
 }
 
 func (e *Engine) isCastlingMove(startX, startY, destX, destY int32) bool {
-	piece := e.Board[startY][startX]
+	piece := e.board[startY][startX]
 	if piece == nil || piece.Type != King {
 		return false
 	}
@@ -184,7 +184,7 @@ func (e *Engine) isCastlingMove(startX, startY, destX, destY int32) bool {
 			return false
 		}
 
-		if e.Board[startY][5] != nil || e.Board[startY][6] != nil {
+		if e.board[startY][5] != nil || e.board[startY][6] != nil {
 			return false
 		}
 
@@ -206,9 +206,9 @@ func (e *Engine) isCastlingMove(startX, startY, destX, destY int32) bool {
 			return false
 		}
 
-		if e.Board[startY][1] != nil ||
-			e.Board[startY][2] != nil ||
-			e.Board[startY][3] != nil {
+		if e.board[startY][1] != nil ||
+			e.board[startY][2] != nil ||
+			e.board[startY][3] != nil {
 			return false
 		}
 
@@ -240,13 +240,30 @@ func (e *Engine) isSquareAttacked(sqX, sqY int32, attackingColor PieceColor) boo
 	return false
 }
 
+func (e *Engine) isCurrentPlayersKingInCheck() bool {
+	// So we need to know the current player , scan through the board to find out where his king is
+	var kingX, kingY int32
+
+	for row := range int32(8) {
+		for col := range int32(8) {
+			piece := e.board[row][col]
+			if piece != nil && piece.Type == King && piece.Color == e.currentPlayerColor {
+				kingX = col
+				kingY = row
+			}
+		}
+	}
+
+	return e.isSquareAttacked(kingX, kingY, toggleCurrentPlayer(e.currentPlayerColor))
+}
+
 func (e *Engine) isPawnAttackingSquare(sqX, sqY int32, attackingColor PieceColor) bool {
 	switch attackingColor {
 	case Black: // Is black attacking the square (sqX, sqY)
 		topLeftX := sqX - 1
 		topLeftY := sqY + 1
 		if e.isInsideBoard(topLeftX, topLeftY) {
-			piece := e.Board[topLeftY][topLeftX]
+			piece := e.board[topLeftY][topLeftX]
 			if piece != nil && piece.Color == attackingColor && piece.Type == Pawn {
 				return true
 			}
@@ -255,7 +272,7 @@ func (e *Engine) isPawnAttackingSquare(sqX, sqY int32, attackingColor PieceColor
 		topRightX := sqX + 1
 		topRightY := sqY + 1
 		if e.isInsideBoard(topRightX, topRightY) {
-			piece := e.Board[topRightY][topRightX]
+			piece := e.board[topRightY][topRightX]
 			if piece != nil && piece.Color == attackingColor && piece.Type == Pawn {
 				return true
 			}
@@ -264,7 +281,7 @@ func (e *Engine) isPawnAttackingSquare(sqX, sqY int32, attackingColor PieceColor
 		bottomLeftX := sqX - 1
 		bottomLeftY := sqY - 1
 		if e.isInsideBoard(bottomLeftX, bottomLeftY) {
-			piece := e.Board[bottomLeftY][bottomLeftX]
+			piece := e.board[bottomLeftY][bottomLeftX]
 			if piece != nil && piece.Color == attackingColor && piece.Type == Pawn {
 				return true
 			}
@@ -273,7 +290,7 @@ func (e *Engine) isPawnAttackingSquare(sqX, sqY int32, attackingColor PieceColor
 		bottomRightX := sqX + 1
 		bottomRightY := sqY - 1
 		if e.isInsideBoard(bottomRightX, bottomRightY) {
-			piece := e.Board[bottomRightY][bottomRightX]
+			piece := e.board[bottomRightY][bottomRightX]
 			if piece != nil && piece.Color == attackingColor && piece.Type == Pawn {
 				return true
 			}
@@ -318,7 +335,7 @@ func (e *Engine) isNightAttackingSquare(sqX, sqY int32, attackingColor PieceColo
 		if !e.isInsideBoard(x, y) {
 			continue
 		}
-		piece := e.Board[y][x]
+		piece := e.board[y][x]
 		if piece != nil && piece.Color == attackingColor && piece.Type == Knight {
 			return true
 		}
