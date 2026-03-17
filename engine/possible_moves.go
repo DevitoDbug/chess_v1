@@ -1,6 +1,8 @@
 package engine
 
-import "fmt"
+import (
+	"fmt"
+)
 
 // Have functions that will produce possible moves for all pieces based on the board
 // Sliding moves will probably be the tricky ones
@@ -15,7 +17,7 @@ func (e *Engine) GetPossibleMoves(sqx, sqy int32) []Move {
 	case Pawn:
 		moves = e.allPossiblePawnMoves(sqx, sqy)
 	case King:
-		fmt.Print("hello")
+		moves = e.allPossibleKingMoves(sqx, sqy)
 	case Queen:
 		fmt.Print("hello")
 	case Rook:
@@ -140,6 +142,119 @@ func (e *Engine) allPossiblePawnMoves(sqx, sqy int32) []Move {
 
 				IsEnpassant: true,
 			})
+		}
+	}
+
+	return moves
+}
+
+func (e *Engine) allPossibleKingMoves(sqx, sqy int32) []Move {
+	moves := []Move{}
+	possibilities := [8][2]int32{
+		{1, 1},
+		{1, 0},
+		{1, -1},
+		{0, -1},
+		{-1, -1},
+		{-1, 1},
+		{-1, 0},
+		{0, 1},
+	}
+
+	kingSquare := e.board[sqy][sqx]
+	if kingSquare == nil || kingSquare.Type != King {
+		return moves
+	}
+	opponentColor := toggleCurrentPlayer(kingSquare.Color)
+
+	for _, d := range possibilities {
+		destinationY := sqy + d[0]
+		destinationX := sqx + d[1]
+		if e.isInsideBoard(destinationX, destinationY) && !e.isSquareAttacked(destinationX, destinationY, opponentColor) {
+			destinationPiece := e.board[destinationY][destinationX]
+			if destinationPiece == nil {
+				moves = append(moves, Move{
+					FromX:                  sqx,
+					FromY:                  sqy,
+					ToX:                    destinationX,
+					ToY:                    destinationY,
+					PreviousCastlingState:  e.castleRights,
+					PreviousEnpassantState: e.enpassantSquare,
+				})
+			} else if destinationPiece.Color == opponentColor {
+				moves = append(moves, Move{
+					FromX: sqx,
+					FromY: sqy,
+					ToX:   destinationX,
+					ToY:   destinationY,
+					CapturedPiece: &Piece{
+						Type:  destinationPiece.Type,
+						Color: opponentColor,
+					},
+					PreviousCastlingState:  e.castleRights,
+					PreviousEnpassantState: e.enpassantSquare,
+				})
+			}
+		}
+	}
+
+	if sqx == 4 && !e.isSquareAttacked(sqx, sqy, opponentColor) {
+		if kingSquare.Color == White && sqy == 0 {
+			if e.castleRights.WhiteKingSideCastle &&
+				!e.isSquareAttacked(5, 0, opponentColor) && e.board[0][5] == nil &&
+				!e.isSquareAttacked(6, 0, opponentColor) && e.board[0][6] == nil {
+				moves = append(moves, Move{
+					FromX:                  sqx,
+					FromY:                  sqy,
+					ToX:                    6,
+					ToY:                    sqy,
+					PreviousEnpassantState: e.enpassantSquare,
+					PreviousCastlingState:  e.castleRights,
+					IsCastling:             true,
+				})
+			}
+			if e.castleRights.WhiteQueenSideCastle &&
+				!e.isSquareAttacked(1, 0, opponentColor) && e.board[0][1] == nil &&
+				!e.isSquareAttacked(2, 0, opponentColor) && e.board[0][2] == nil &&
+				!e.isSquareAttacked(3, 0, opponentColor) && e.board[0][3] == nil {
+				moves = append(moves, Move{
+					FromX:                  sqx,
+					FromY:                  sqy,
+					ToX:                    2,
+					ToY:                    sqy,
+					PreviousEnpassantState: e.enpassantSquare,
+					PreviousCastlingState:  e.castleRights,
+					IsCastling:             true,
+				})
+			}
+		} else if kingSquare.Color == Black && sqy == 7 {
+			if e.castleRights.BlackKingSideCastle &&
+				!e.isSquareAttacked(5, 7, opponentColor) && e.board[7][5] == nil &&
+				!e.isSquareAttacked(6, 7, opponentColor) && e.board[7][6] == nil {
+				moves = append(moves, Move{
+					FromX:                  sqx,
+					FromY:                  sqy,
+					ToX:                    6,
+					ToY:                    sqy,
+					PreviousEnpassantState: e.enpassantSquare,
+					PreviousCastlingState:  e.castleRights,
+					IsCastling:             true,
+				})
+			}
+			if e.castleRights.BlackQueenSideCastle &&
+				!e.isSquareAttacked(1, 7, opponentColor) && e.board[7][1] == nil &&
+				!e.isSquareAttacked(2, 7, opponentColor) && e.board[7][2] == nil &&
+				!e.isSquareAttacked(3, 7, opponentColor) && e.board[7][3] == nil {
+				moves = append(moves, Move{
+					FromX:                  sqx,
+					FromY:                  sqy,
+					ToX:                    2,
+					ToY:                    sqy,
+					PreviousEnpassantState: e.enpassantSquare,
+					PreviousCastlingState:  e.castleRights,
+					IsCastling:             true,
+				})
+			}
 		}
 	}
 
