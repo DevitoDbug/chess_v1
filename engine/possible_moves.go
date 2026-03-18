@@ -1,16 +1,12 @@
 package engine
 
-import (
-	"fmt"
-)
-
-// GetPossibleMoves - Generates all pseudo moves for all pieces except for the king where the moves are actually legal
+// GetPossiblePseudoMoves - Generates all pseudo moves for all pieces except for the king where the moves are actually legal
 // Moves generated from this should be simulated to determine if they leave the board in a legal state
-func (e *Engine) GetPossibleMoves(sqx, sqy int32) []Move {
+func (e *Engine) GetPossiblePseudoMoves(sqx, sqy int32) []Move {
 	moves := []Move{}
 	piece := e.board[sqy][sqx]
 	if piece == nil {
-		return nil
+		return moves
 	}
 
 	switch piece.Type {
@@ -19,15 +15,18 @@ func (e *Engine) GetPossibleMoves(sqx, sqy int32) []Move {
 	case King:
 		moves = e.allPossibleKingMoves(sqx, sqy)
 	case Queen:
-		fmt.Print("hello")
+		diagonalMoves := e.allPossibleDiagonalSlidingMoves(sqx, sqy)
+		straightMoves := e.allPossibleStraightSlidingMoves(sqx, sqy)
+		moves = append(moves, straightMoves...)
+		moves = append(moves, diagonalMoves...)
 	case Rook:
-		fmt.Print("hello")
+		moves = e.allPossibleStraightSlidingMoves(sqx, sqy)
 	case Bishop:
-		moves = e.allPossibleBishopMoves(sqx, sqy)
+		moves = e.allPossibleDiagonalSlidingMoves(sqx, sqy)
 	case Knight:
 		moves = e.allPossibleKnightMoves(sqx, sqy)
 	default:
-		return nil
+		return moves
 	}
 
 	return moves
@@ -315,7 +314,7 @@ func (e *Engine) allPossibleKnightMoves(sqx, sqy int32) []Move {
 	return moves
 }
 
-func (e *Engine) allPossibleBishopMoves(sqx, sqy int32) []Move {
+func (e *Engine) allPossibleDiagonalSlidingMoves(sqx, sqy int32) []Move {
 	moves := []Move{}
 	possibilities := [4][2]int32{
 		{1, 1},
@@ -324,7 +323,7 @@ func (e *Engine) allPossibleBishopMoves(sqx, sqy int32) []Move {
 		{-1, 1},
 	}
 
-	if !e.isInsideBoard(sqx, sqy) || e.board[sqy][sqx] == nil || e.board[sqy][sqx].Type != Bishop {
+	if !e.isInsideBoard(sqx, sqy) || e.board[sqy][sqx] == nil || (e.board[sqy][sqx].Type != Bishop && e.board[sqy][sqx].Type != Queen) {
 		return moves
 	}
 	opponentColor := toggleCurrentPlayer(e.board[sqy][sqx].Color)
@@ -359,6 +358,60 @@ func (e *Engine) allPossibleBishopMoves(sqx, sqy int32) []Move {
 				}
 
 				break // Any piece found in diagonal warrants exiting the diagonal check
+			}
+
+			destinationX += d[0]
+			destinationY += d[1]
+		}
+	}
+
+	return moves
+}
+
+func (e *Engine) allPossibleStraightSlidingMoves(sqx, sqy int32) []Move {
+	moves := []Move{}
+	possibilities := [4][2]int32{
+		{0, 1},
+		{1, 0},
+		{0, -1},
+		{-1, 0},
+	}
+
+	if !e.isInsideBoard(sqx, sqy) || e.board[sqy][sqx] == nil || (e.board[sqy][sqx].Type != Rook && e.board[sqy][sqx].Type != Queen) {
+		return moves
+	}
+	opponentColor := toggleCurrentPlayer(e.board[sqy][sqx].Color)
+
+	for _, d := range possibilities {
+		destinationX := sqx + d[0]
+		destinationY := sqy + d[1]
+
+		for e.isInsideBoard(destinationX, destinationY) {
+			destinationPiece := e.board[destinationY][destinationX]
+
+			if destinationPiece == nil {
+				moves = append(moves, Move{
+					FromX:                        sqx,
+					FromY:                        sqy,
+					ToX:                          destinationX,
+					ToY:                          destinationY,
+					PreviousEnpassantSquareState: e.enpassantSquare,
+					PreviousCastlingState:        e.castleRights,
+				})
+			} else {
+				if destinationPiece.Color == opponentColor {
+					moves = append(moves, Move{
+						FromX:                        sqx,
+						FromY:                        sqy,
+						ToX:                          destinationX,
+						ToY:                          destinationY,
+						CapturedPiece:                destinationPiece,
+						PreviousEnpassantSquareState: e.enpassantSquare,
+						PreviousCastlingState:        e.castleRights,
+					})
+				}
+				// When a piece is found in the straight lines we just exist that given straight line
+				break
 			}
 
 			destinationX += d[0]
