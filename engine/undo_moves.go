@@ -57,7 +57,7 @@ func (e *Engine) UndoMove(move Move) error {
 		e.board[rookY][rookPosX] = nil
 	}
 
-	e.enpassantSquare = move.PreviousEnpassantState
+	e.enpassantSquare = move.PreviousEnpassantSquareState
 	e.castleRights = move.PreviousCastlingState
 	return nil
 }

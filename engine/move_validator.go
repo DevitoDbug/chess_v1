@@ -230,7 +230,7 @@ func (e *Engine) isSquareAttacked(sqX, sqY int32, attackingColor PieceColor) boo
 	if e.isDiagonalAttackingSquare(sqX, sqY, attackingColor) {
 		return true
 	}
-	if e.isNightAttackingSquare(sqX, sqY, attackingColor) {
+	if e.isKnightAttackingSquare(sqX, sqY, attackingColor) {
 		return true
 	}
 	if e.isStraightPathAttackingSquare(sqX, sqY, attackingColor) {
@@ -317,8 +317,8 @@ func (e *Engine) isDiagonalAttackingSquare(sqX, sqY int32, attackingColor PieceC
 	return false
 }
 
-func (e *Engine) isNightAttackingSquare(sqX, sqY int32, attackingColor PieceColor) bool {
-	nightMoves := [8][2]int32{
+func (e *Engine) isKnightAttackingSquare(sqX, sqY int32, attackingColor PieceColor) bool {
+	knightMoves := [8][2]int32{
 		{1, 2},
 		{-1, 2},
 		{1, -2},
@@ -329,7 +329,7 @@ func (e *Engine) isNightAttackingSquare(sqX, sqY int32, attackingColor PieceColo
 		{-2, -1},
 	}
 
-	for _, d := range nightMoves {
+	for _, d := range knightMoves {
 		x := sqX + d[0]
 		y := sqY + d[1]
 		if !e.isInsideBoard(x, y) {

@@ -47,9 +47,9 @@ type Move struct {
 	ToX   int32
 	ToY   int32
 
-	CapturedPiece          *Piece
-	PreviousEnpassantState *Square
-	PreviousCastlingState  CastleRights
+	CapturedPiece                *Piece
+	PreviousEnpassantSquareState *Square
+	PreviousCastlingState        CastleRights
 
 	IsEnpassant bool
 	IsCastling  bool

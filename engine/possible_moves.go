@@ -4,8 +4,8 @@ import (
 	"fmt"
 )
 
-// Have functions that will produce possible moves for all pieces based on the board
-// Sliding moves will probably be the tricky ones
+// GetPossibleMoves - Generates all pseudo moves for all pieces except for the king where the moves are actually legal
+// Moves generated from this should be simulated to determine if they leave the board in a legal state
 func (e *Engine) GetPossibleMoves(sqx, sqy int32) []Move {
 	moves := []Move{}
 	piece := e.board[sqy][sqx]
@@ -23,9 +23,9 @@ func (e *Engine) GetPossibleMoves(sqx, sqy int32) []Move {
 	case Rook:
 		fmt.Print("hello")
 	case Bishop:
-		fmt.Print("hello")
+		moves = e.allPossibleBishopMoves(sqx, sqy)
 	case Knight:
-		fmt.Print("hello")
+		moves = e.allPossibleKnightMoves(sqx, sqy)
 	default:
 		return nil
 	}
@@ -174,12 +174,12 @@ func (e *Engine) allPossibleKingMoves(sqx, sqy int32) []Move {
 			destinationPiece := e.board[destinationY][destinationX]
 			if destinationPiece == nil {
 				moves = append(moves, Move{
-					FromX:                  sqx,
-					FromY:                  sqy,
-					ToX:                    destinationX,
-					ToY:                    destinationY,
-					PreviousCastlingState:  e.castleRights,
-					PreviousEnpassantState: e.enpassantSquare,
+					FromX:                        sqx,
+					FromY:                        sqy,
+					ToX:                          destinationX,
+					ToY:                          destinationY,
+					PreviousCastlingState:        e.castleRights,
+					PreviousEnpassantSquareState: e.enpassantSquare,
 				})
 			} else if destinationPiece.Color == opponentColor {
 				moves = append(moves, Move{
@@ -191,8 +191,8 @@ func (e *Engine) allPossibleKingMoves(sqx, sqy int32) []Move {
 						Type:  destinationPiece.Type,
 						Color: opponentColor,
 					},
-					PreviousCastlingState:  e.castleRights,
-					PreviousEnpassantState: e.enpassantSquare,
+					PreviousCastlingState:        e.castleRights,
+					PreviousEnpassantSquareState: e.enpassantSquare,
 				})
 			}
 		}
@@ -204,13 +204,13 @@ func (e *Engine) allPossibleKingMoves(sqx, sqy int32) []Move {
 				!e.isSquareAttacked(5, 0, opponentColor) && e.board[0][5] == nil &&
 				!e.isSquareAttacked(6, 0, opponentColor) && e.board[0][6] == nil {
 				moves = append(moves, Move{
-					FromX:                  sqx,
-					FromY:                  sqy,
-					ToX:                    6,
-					ToY:                    sqy,
-					PreviousEnpassantState: e.enpassantSquare,
-					PreviousCastlingState:  e.castleRights,
-					IsCastling:             true,
+					FromX:                        sqx,
+					FromY:                        sqy,
+					ToX:                          6,
+					ToY:                          sqy,
+					PreviousEnpassantSquareState: e.enpassantSquare,
+					PreviousCastlingState:        e.castleRights,
+					IsCastling:                   true,
 				})
 			}
 			if e.castleRights.WhiteQueenSideCastle &&
@@ -218,13 +218,13 @@ func (e *Engine) allPossibleKingMoves(sqx, sqy int32) []Move {
 				!e.isSquareAttacked(2, 0, opponentColor) && e.board[0][2] == nil &&
 				!e.isSquareAttacked(3, 0, opponentColor) && e.board[0][3] == nil {
 				moves = append(moves, Move{
-					FromX:                  sqx,
-					FromY:                  sqy,
-					ToX:                    2,
-					ToY:                    sqy,
-					PreviousEnpassantState: e.enpassantSquare,
-					PreviousCastlingState:  e.castleRights,
-					IsCastling:             true,
+					FromX:                        sqx,
+					FromY:                        sqy,
+					ToX:                          2,
+					ToY:                          sqy,
+					PreviousEnpassantSquareState: e.enpassantSquare,
+					PreviousCastlingState:        e.castleRights,
+					IsCastling:                   true,
 				})
 			}
 		} else if kingSquare.Color == Black && sqy == 7 {
@@ -232,13 +232,13 @@ func (e *Engine) allPossibleKingMoves(sqx, sqy int32) []Move {
 				!e.isSquareAttacked(5, 7, opponentColor) && e.board[7][5] == nil &&
 				!e.isSquareAttacked(6, 7, opponentColor) && e.board[7][6] == nil {
 				moves = append(moves, Move{
-					FromX:                  sqx,
-					FromY:                  sqy,
-					ToX:                    6,
-					ToY:                    sqy,
-					PreviousEnpassantState: e.enpassantSquare,
-					PreviousCastlingState:  e.castleRights,
-					IsCastling:             true,
+					FromX:                        sqx,
+					FromY:                        sqy,
+					ToX:                          6,
+					ToY:                          sqy,
+					PreviousEnpassantSquareState: e.enpassantSquare,
+					PreviousCastlingState:        e.castleRights,
+					IsCastling:                   true,
 				})
 			}
 			if e.castleRights.BlackQueenSideCastle &&
@@ -246,15 +246,123 @@ func (e *Engine) allPossibleKingMoves(sqx, sqy int32) []Move {
 				!e.isSquareAttacked(2, 7, opponentColor) && e.board[7][2] == nil &&
 				!e.isSquareAttacked(3, 7, opponentColor) && e.board[7][3] == nil {
 				moves = append(moves, Move{
-					FromX:                  sqx,
-					FromY:                  sqy,
-					ToX:                    2,
-					ToY:                    sqy,
-					PreviousEnpassantState: e.enpassantSquare,
-					PreviousCastlingState:  e.castleRights,
-					IsCastling:             true,
+					FromX:                        sqx,
+					FromY:                        sqy,
+					ToX:                          2,
+					ToY:                          sqy,
+					PreviousEnpassantSquareState: e.enpassantSquare,
+					PreviousCastlingState:        e.castleRights,
+					IsCastling:                   true,
 				})
 			}
+		}
+	}
+
+	return moves
+}
+
+func (e *Engine) allPossibleKnightMoves(sqx, sqy int32) []Move {
+	moves := []Move{}
+	possibilities := [8][2]int32{
+		{1, 2},
+		{-1, 2},
+
+		{2, 1},
+		{2, -1},
+
+		{1, -2},
+		{-1, -2},
+
+		{-2, 1},
+		{-2, -1},
+	}
+	if !e.isInsideBoard(sqx, sqy) || e.board[sqy][sqx] == nil || e.board[sqy][sqx].Type != Knight {
+		return moves
+	}
+
+	knightPiece := e.board[sqy][sqx]
+	opponentColor := toggleCurrentPlayer(knightPiece.Color)
+
+	for _, d := range possibilities {
+		destinationX := sqx + d[0]
+		destinationY := sqy + d[1]
+
+		if e.isInsideBoard(destinationX, destinationY) {
+			destinationPiece := e.board[destinationY][destinationX]
+			if destinationPiece != nil && destinationPiece.Color == opponentColor {
+				moves = append(moves, Move{
+					FromX:                        sqx,
+					FromY:                        sqy,
+					ToX:                          destinationX,
+					ToY:                          destinationY,
+					CapturedPiece:                destinationPiece,
+					PreviousEnpassantSquareState: e.enpassantSquare,
+					PreviousCastlingState:        e.castleRights,
+				})
+			} else if destinationPiece == nil {
+				moves = append(moves, Move{
+					FromX:                        sqx,
+					FromY:                        sqy,
+					ToX:                          destinationX,
+					ToY:                          destinationY,
+					PreviousEnpassantSquareState: e.enpassantSquare,
+					PreviousCastlingState:        e.castleRights,
+				})
+			}
+		}
+	}
+
+	return moves
+}
+
+func (e *Engine) allPossibleBishopMoves(sqx, sqy int32) []Move {
+	moves := []Move{}
+	possibilities := [4][2]int32{
+		{1, 1},
+		{-1, -1},
+		{1, -1},
+		{-1, 1},
+	}
+
+	if !e.isInsideBoard(sqx, sqy) || e.board[sqy][sqx] == nil || e.board[sqy][sqx].Type != Bishop {
+		return moves
+	}
+	opponentColor := toggleCurrentPlayer(e.board[sqy][sqx].Color)
+
+	for _, d := range possibilities {
+		destinationX := sqx + d[0]
+		destinationY := sqy + d[1]
+
+		for e.isInsideBoard(destinationX, destinationY) {
+			destinationPiece := e.board[destinationY][destinationX]
+
+			if destinationPiece == nil {
+				moves = append(moves, Move{
+					FromX:                        sqx,
+					FromY:                        sqy,
+					ToX:                          destinationX,
+					ToY:                          destinationY,
+					PreviousEnpassantSquareState: e.enpassantSquare,
+					PreviousCastlingState:        e.castleRights,
+				})
+			} else {
+				if destinationPiece.Color == opponentColor {
+					moves = append(moves, Move{
+						FromX:                        sqx,
+						FromY:                        sqy,
+						ToX:                          destinationX,
+						ToY:                          destinationY,
+						CapturedPiece:                destinationPiece,
+						PreviousEnpassantSquareState: e.enpassantSquare,
+						PreviousCastlingState:        e.castleRights,
+					})
+				}
+
+				break // Any piece found in diagonal warrants exiting the diagonal check
+			}
+
+			destinationX += d[0]
+			destinationY += d[1]
 		}
 	}
 

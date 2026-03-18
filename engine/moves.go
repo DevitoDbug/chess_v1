@@ -8,7 +8,7 @@ import (
 
 func (e *Engine) MovePawn(startX, startY, destinationX, destinationY int32) (Move, error) {
 	move := Move{}
-	move.PreviousEnpassantState = e.enpassantSquare
+	move.PreviousEnpassantSquareState = e.enpassantSquare
 	move.PreviousCastlingState = e.castleRights
 
 	startPiece := e.board[startY][startX]
@@ -117,7 +117,7 @@ func (e *Engine) MovePawn(startX, startY, destinationX, destinationY int32) (Mov
 
 func (e *Engine) MoveKing(startX, startY, destinationX, destinationY int32) (Move, error) {
 	move := Move{}
-	move.PreviousEnpassantState = e.enpassantSquare
+	move.PreviousEnpassantSquareState = e.enpassantSquare
 	move.PreviousCastlingState = e.castleRights
 
 	destinationPiece := e.board[destinationY][destinationX]
@@ -167,7 +167,7 @@ func (e *Engine) MoveKing(startX, startY, destinationX, destinationY int32) (Mov
 
 func (e *Engine) MoveQueen(startX, startY, destinationX, destinationY int32) (Move, error) {
 	move := Move{}
-	move.PreviousEnpassantState = e.enpassantSquare
+	move.PreviousEnpassantSquareState = e.enpassantSquare
 	move.PreviousCastlingState = e.castleRights
 
 	destinationPiece := e.board[destinationY][destinationX]
@@ -193,7 +193,7 @@ func (e *Engine) MoveQueen(startX, startY, destinationX, destinationY int32) (Mo
 
 func (e *Engine) MoveKnight(startX, startY, destinationX, destinationY int32) (Move, error) {
 	move := Move{}
-	move.PreviousEnpassantState = e.enpassantSquare
+	move.PreviousEnpassantSquareState = e.enpassantSquare
 	move.PreviousCastlingState = e.castleRights
 
 	destinationPiece := e.board[destinationY][destinationX]
@@ -227,7 +227,7 @@ func (e *Engine) MoveKnight(startX, startY, destinationX, destinationY int32) (M
 
 func (e *Engine) MoveBishop(startX, startY, destinationX, destinationY int32) (Move, error) {
 	move := Move{}
-	move.PreviousEnpassantState = e.enpassantSquare
+	move.PreviousEnpassantSquareState = e.enpassantSquare
 	move.PreviousCastlingState = e.castleRights
 
 	destinationPiece := e.board[destinationY][destinationX]
@@ -250,7 +250,7 @@ func (e *Engine) MoveBishop(startX, startY, destinationX, destinationY int32) (M
 
 func (e *Engine) MoveRook(startX, startY, destinationX, destinationY int32) (Move, error) {
 	move := Move{}
-	move.PreviousEnpassantState = e.enpassantSquare
+	move.PreviousEnpassantSquareState = e.enpassantSquare
 	move.PreviousCastlingState = e.castleRights
 
 	destinationPiece := e.board[destinationY][destinationX]
