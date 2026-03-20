@@ -4,8 +4,7 @@ import (
 	"fmt"
 )
 
-// This file contains the game loop
-
+// Run - has the game loop
 func (e *Engine) Run() {
 	e.RenderBoard()
 

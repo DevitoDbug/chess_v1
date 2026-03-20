@@ -8,6 +8,12 @@ import (
 
 func (e *Engine) GigaMove(startX, startY, destinationX, destinationY int32) (Move, error) {
 	move := Move{}
+	fmt.Printf("startX: %v\nstartY: %v\n", startX, startY)
+
+	if !e.isInsideBoard(startX, startY) {
+		return move, fmt.Errorf("invalid move, referenced address outside the board")
+	}
+
 	startingPiece := e.board[startY][startX]
 	if startingPiece == nil {
 		return move, fmt.Errorf("invalid move, no piece in starting square")
@@ -37,6 +43,7 @@ func (e *Engine) MovePawn(startX, startY, destinationX, destinationY int32) (Mov
 	move.PreviousCastlingState = e.castleRights
 
 	startPiece := e.board[startY][startX]
+	currentPlayerColor := startPiece.Color
 	destinationPiece := e.board[destinationY][destinationX]
 
 	x1 := startX
@@ -48,7 +55,7 @@ func (e *Engine) MovePawn(startX, startY, destinationX, destinationY int32) (Mov
 
 	xDiff := x2 - x1
 	yDiff := int32(0)
-	switch e.currentPlayerColor {
+	switch currentPlayerColor {
 	// White moves are positive while black moves are negative
 	// White moves from a 0 -> 7 while black moves from 7 -> 0
 	case White:
@@ -62,7 +69,7 @@ func (e *Engine) MovePawn(startX, startY, destinationX, destinationY int32) (Mov
 		// yDiff check is to make sure that we are moving in the right direction,
 		// white is not moving toward 0 and black towards 7
 		isEnpassantMove := e.enpassantSquare != nil && destinationY == e.enpassantSquare.RowIndex && destinationX == e.enpassantSquare.ColumnIndex
-		isAttackingOpponentPiece := destinationPiece != nil && destinationPiece.Color != e.currentPlayerColor
+		isAttackingOpponentPiece := destinationPiece != nil && destinationPiece.Color != currentPlayerColor
 		if !isAttackingOpponentPiece && !isEnpassantMove {
 			return move, fmt.Errorf("player is not allowed to attack his own piece")
 		}
@@ -70,7 +77,7 @@ func (e *Engine) MovePawn(startX, startY, destinationX, destinationY int32) (Mov
 		if isEnpassantMove {
 			move.IsEnpassant = true
 
-			switch e.currentPlayerColor {
+			switch currentPlayerColor {
 			case White:
 				move.CapturedPiece = e.board[e.enpassantSquare.RowIndex-1][e.enpassantSquare.ColumnIndex]
 				e.board[e.enpassantSquare.RowIndex-1][e.enpassantSquare.ColumnIndex] = nil
@@ -221,8 +228,10 @@ func (e *Engine) MoveKnight(startX, startY, destinationX, destinationY int32) (M
 	move.PreviousEnpassantSquareState = e.enpassantSquare
 	move.PreviousCastlingState = e.castleRights
 
+	startPiece := e.board[startY][startX]
+	currentPlayerColor := startPiece.Color
 	destinationPiece := e.board[destinationY][destinationX]
-	if destinationPiece != nil && destinationPiece.Color == e.currentPlayerColor {
+	if destinationPiece != nil && destinationPiece.Color == currentPlayerColor {
 		return move, fmt.Errorf("move not allowed. Players cannot attack their own piece")
 	}
 

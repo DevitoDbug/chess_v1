@@ -4,6 +4,7 @@ import "fmt"
 
 // GetEndGameState - tells if there is a checkmate of a stalemate as early as possible.
 func (e *Engine) GetEndGameState() *EndGameState {
+	fmt.Println("Endgame state called")
 	opponentColor := toggleCurrentPlayer(e.currentPlayerColor)
 
 	for row := range int32(8) {
@@ -32,9 +33,12 @@ func (e *Engine) GetEndGameState() *EndGameState {
 				}
 
 				if kingIsInDanger {
+					fmt.Println("King is danger for move: ")
+					fmt.Printf("%+v\n", move)
 					continue
 				}
 
+				fmt.Println("Move found")
 				fmt.Printf("%+v\n", move)
 				fmt.Println()
 

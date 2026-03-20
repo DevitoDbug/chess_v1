@@ -6,7 +6,7 @@ A chess engine built in Go, runs in your terminal. Started from scratch — bare
 
 ## How it looks
 
-![board](./docs/images/board-image.png)
+![board](./docs/images/Check.webp)
 
 ---
 
@@ -34,15 +34,13 @@ Then just type moves in the format `e2e4` — from square to square.
 
 ## How moves work
 
-![move input](./docs/images/move-input.png)
-
-![scholars mate](./docs/images/scholars-mate.gif)
+![move input](./docs/images/move-input.webp)
 
 ---
 
 ## Castling
 
-![castling](./docs/images/castling-move.png)
+![castling](./docs/images/castling-move.webp)
 
 Castling rights are tracked throughout the game. If you move your king or either rook, you lose the right to castle on that side. Works for both colors.
 
@@ -50,9 +48,9 @@ Castling rights are tracked throughout the game. If you move your king or either
 
 ## En passant
 
-![before en passant](./docs/images/before-enpassant.png)
+![before en passant](./docs/images/before-enpassant.webp)
 
-![after en passant](./docs/images/after-enpassant.png)
+![after en passant](./docs/images/after-enpassant.webp)
 
 The en passant square is tracked after every pawn double push and cleared after the next move if it wasn't taken.
 
