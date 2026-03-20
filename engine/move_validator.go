@@ -10,16 +10,18 @@ func (e *Engine) isInsideBoard(x, y int32) bool {
 	return x >= 0 && y >= 0 && x <= 7 && y <= 7
 }
 
-func (e *Engine) isStraightValidSlidingMove(startingX, startingY, destinationX, destinationY int32) error {
-	x1 := startingX
-	x2 := destinationX
-	y1 := startingY
-	y2 := destinationY
+func (e *Engine) isStraightValidSlidingMove(startX, startY, destX, destY int32) error {
+	x1 := startX
+	x2 := destX
+	y1 := startY
+	y2 := destY
 	xDiff := x2 - x1
 	yDiff := y2 - y1
 
+	startPiece := e.board[startY][startX]
+
 	// Destination should not have a piece similar to current player color
-	if e.board[destinationY][destinationX] != nil && e.board[destinationY][destinationX].Color == e.currentPlayerColor {
+	if e.board[destY][destX] != nil && e.board[destY][destX].Color == startPiece.Color {
 		return fmt.Errorf("move not allowed, piece can not attack a square that has current player's piece")
 	}
 
@@ -45,26 +47,26 @@ func (e *Engine) isStraightValidSlidingMove(startingX, startingY, destinationX, 
 			if xDiff > 0 {
 				// Moving to wards the right x increases
 				// The +1 is to make sure that we do not check the starting square
-				if e.board[startingY][(startingX+1)+colOffset] != nil {
-					return fmt.Errorf("move not allowed, piece path has another piece blocking i.e (%v,%v)", startingX+1+colOffset, startingY)
+				if e.board[startY][(startX+1)+colOffset] != nil {
+					return fmt.Errorf("move not allowed, piece path has another piece blocking i.e (%v,%v)", startX+1+colOffset, startY)
 				}
 			} else {
 				// Moving to wards the left x decreases
 				// The -1 is to make sure that we do not check the starting square
-				if e.board[startingY][(startingX-1)-colOffset] != nil {
-					return fmt.Errorf("move not allowed, piece path has another piece blocking i.e (%v,%v)", startingX+1+colOffset, startingY)
+				if e.board[startY][(startX-1)-colOffset] != nil {
+					return fmt.Errorf("move not allowed, piece path has another piece blocking i.e (%v,%v)", startX+1+colOffset, startY)
 				}
 			}
 		}
 	} else if yAb > xAb {
 		for rowOffset := range yAb - 1 {
 			if yDiff > 0 {
-				if e.board[(startingY+1)+rowOffset][startingX] != nil {
-					return fmt.Errorf("move not allowed, piece path has another piece blocking i.e (%v,%v)", startingX, startingY+1+rowOffset)
+				if e.board[(startY+1)+rowOffset][startX] != nil {
+					return fmt.Errorf("move not allowed, piece path has another piece blocking i.e (%v,%v)", startX, startY+1+rowOffset)
 				}
 			} else {
-				if e.board[(startingY-1)-rowOffset][startingX] != nil {
-					return fmt.Errorf("move not allowed, piece path has another piece blocking i.e (%v,%v)", startingX, startingY+1+rowOffset)
+				if e.board[(startY-1)-rowOffset][startX] != nil {
+					return fmt.Errorf("move not allowed, piece path has another piece blocking i.e (%v,%v)", startX, startY+1+rowOffset)
 				}
 			}
 		}
@@ -72,17 +74,18 @@ func (e *Engine) isStraightValidSlidingMove(startingX, startingY, destinationX, 
 	return nil
 }
 
-func (e *Engine) isDiagonalValidSlidingMove(startingX, startingY, destinationX, destinationY int32) error {
+func (e *Engine) isDiagonalValidSlidingMove(startX, startY, destX, destY int32) error {
 	// Cannot move to a square that has a color similar to the current player
-	piece := e.board[destinationY][destinationX]
-	if piece != nil && piece.Color == e.currentPlayerColor {
+	destinationPiece := e.board[destY][destX]
+	startingPiece := e.board[startY][startX]
+	if destinationPiece != nil && destinationPiece.Color == startingPiece.Color {
 		return fmt.Errorf("move not allowed, destination square has current player's piece")
 	}
 
-	x1 := startingX
-	x2 := destinationX
-	y1 := startingY
-	y2 := destinationY
+	x1 := startX
+	x2 := destX
+	y1 := startY
+	y2 := destY
 
 	xAb := utils.AbsoluteDiff(x1, x2)
 	yAb := utils.AbsoluteDiff(y1, y2)
@@ -96,8 +99,8 @@ func (e *Engine) isDiagonalValidSlidingMove(startingX, startingY, destinationX, 
 	// Evaluated diagonal - Basically figuring out if there is another piece along the way
 	xChange := x1 - x2
 	yChange := y1 - y2
-	diagonalX := startingX
-	diagonalY := startingY
+	diagonalX := startX
+	diagonalY := startY
 
 	// The -1 is, destination pieces should not be detected as obstacles
 	for range xAb - 1 {
@@ -122,17 +125,18 @@ func (e *Engine) isDiagonalValidSlidingMove(startingX, startingY, destinationX, 
 	return nil
 }
 
-func (e *Engine) isValidKingMove(startingX, startingY, destinationX, destinationY int32) error {
+func (e *Engine) isValidKingMove(startX, startY, destX, destY int32) error {
 	// Cannot move to a square that has a color similar to the current player
-	piece := e.board[destinationY][destinationX]
-	if piece != nil && piece.Color == e.currentPlayerColor {
+	piece := e.board[destY][destX]
+	startingPiece := e.board[startY][startX]
+	if piece != nil && piece.Color == startingPiece.Color {
 		return fmt.Errorf("move not allowed, destination square has current player's piece")
 	}
 
-	x1 := startingX
-	x2 := destinationX
-	y1 := startingY
-	y2 := destinationY
+	x1 := startX
+	x2 := destX
+	y1 := startY
+	y2 := destY
 
 	xAb := utils.AbsoluteDiff(x1, x2)
 	yAb := utils.AbsoluteDiff(y1, y2)
@@ -144,7 +148,7 @@ func (e *Engine) isValidKingMove(startingX, startingY, destinationX, destination
 		return fmt.Errorf("move not allowed, kings can only move one square unless castling")
 	}
 
-	if e.isSquareAttacked(destinationX, destinationY, toggleCurrentPlayer(e.currentPlayerColor)) {
+	if e.isSquareAttacked(destX, destY, toggleCurrentPlayer(startingPiece.Color)) {
 		return fmt.Errorf("move not allowed, square is attacked")
 	}
 
@@ -240,14 +244,14 @@ func (e *Engine) isSquareAttacked(sqX, sqY int32, attackingColor PieceColor) boo
 	return false
 }
 
-func (e *Engine) isCurrentPlayersKingInCheck() bool {
+func (e *Engine) isCurrentPlayersKingInCheck(currentPlayerColor PieceColor) bool {
 	// So we need to know the current player , scan through the board to find out where his king is
 	var kingX, kingY int32
 
 	for row := range int32(8) {
 		for col := range int32(8) {
 			piece := e.board[row][col]
-			if piece != nil && piece.Type == King && piece.Color == e.currentPlayerColor {
+			if piece != nil && piece.Type == King && piece.Color == currentPlayerColor {
 				kingX = col
 				kingY = row
 			}

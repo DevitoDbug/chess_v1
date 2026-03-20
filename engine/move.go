@@ -5,13 +5,13 @@ import (
 )
 
 func (e *Engine) MovePiece(input Input) error {
-	piece := e.board[input.StartY][input.StartX]
-	if piece == nil {
+	startPiece := e.board[input.StartY][input.StartX]
+	if startPiece == nil {
 		return fmt.Errorf("no piece in the square referenced")
 	}
 
 	// Catch players moving other opponents pieces early
-	if piece.Color != e.currentPlayerColor {
+	if startPiece.Color != e.currentPlayerColor {
 		return fmt.Errorf("invalid move, you can only move pieces belonging to the current player")
 	}
 
@@ -20,7 +20,7 @@ func (e *Engine) MovePiece(input Input) error {
 		return err
 	}
 
-	playerIsStillInCheck := e.isCurrentPlayersKingInCheck()
+	playerIsStillInCheck := e.isCurrentPlayersKingInCheck(startPiece.Color)
 	if playerIsStillInCheck {
 		err := e.UndoMove(move)
 		if err != nil {

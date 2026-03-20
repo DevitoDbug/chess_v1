@@ -2,7 +2,7 @@ package engine
 
 import "fmt"
 
-// GetEndGameState - tells if there is a checkmate of a stalemate as early as possible.
+// GetEndGameState - tells if there is a checkmate or a stalemate as early as possible.
 func (e *Engine) GetEndGameState() *EndGameState {
 	fmt.Println("Endgame state called")
 	opponentColor := toggleCurrentPlayer(e.currentPlayerColor)
@@ -22,6 +22,7 @@ func (e *Engine) GetEndGameState() *EndGameState {
 				if err != nil {
 					continue
 				}
+
 				king := e.findKing(opponentColor)
 				if e.isSquareAttacked(king.ColumnIndex, king.RowIndex, e.currentPlayerColor) {
 					kingIsInDanger = true

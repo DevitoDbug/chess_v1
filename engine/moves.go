@@ -8,7 +8,6 @@ import (
 
 func (e *Engine) GigaMove(startX, startY, destinationX, destinationY int32) (Move, error) {
 	move := Move{}
-	fmt.Printf("startX: %v\nstartY: %v\n", startX, startY)
 
 	if !e.isInsideBoard(startX, startY) {
 		return move, fmt.Errorf("invalid move, referenced address outside the board")
