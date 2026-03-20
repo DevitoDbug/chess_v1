@@ -29,9 +29,9 @@ const (
 )
 
 type Square struct {
-	RowIndex    int32
-	ColumnIndex int32
-	Checked     bool
+	RowIndex         int32
+	ColumnIndex      int32
+	EnpassantChecked bool // Used mainly for enpassant ( has this square ever been checked for enpassant )
 }
 
 type CastleRights struct {
@@ -54,4 +54,9 @@ type Move struct {
 	IsEnpassant bool
 	IsCastling  bool
 	IsPromotion bool
+}
+
+type EndGameState struct {
+	StaleMate bool
+	CheckMate bool
 }

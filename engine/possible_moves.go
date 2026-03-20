@@ -1,8 +1,8 @@
 package engine
 
-// GetPossiblePseudoMoves - Generates all pseudo moves for all pieces except for the king where the moves are actually legal
+// GetAllPossiblePseudoMoves - Generates all pseudo moves for all pieces except for the king where the moves are actually legal
 // Moves generated from this should be simulated to determine if they leave the board in a legal state
-func (e *Engine) GetPossiblePseudoMoves(sqx, sqy int32) []Move {
+func (e *Engine) GetAllPossiblePseudoMoves(sqx, sqy int32) []Move {
 	moves := []Move{}
 	piece := e.board[sqy][sqx]
 	if piece == nil {

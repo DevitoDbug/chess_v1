@@ -6,6 +6,31 @@ import (
 	"github.com/DevitoDbug/chess_v1/utils"
 )
 
+func (e *Engine) GigaMove(startX, startY, destinationX, destinationY int32) (Move, error) {
+	move := Move{}
+	startingPiece := e.board[startY][startX]
+	if startingPiece == nil {
+		return move, fmt.Errorf("invalid move, no piece in starting square")
+	}
+
+	switch startingPiece.Type {
+	case Pawn:
+		return e.MovePawn(startX, startY, destinationX, destinationY)
+	case King:
+		return e.MoveKing(startX, startY, destinationX, destinationY)
+	case Queen:
+		return e.MoveQueen(startX, startY, destinationX, destinationY)
+	case Knight:
+		return e.MoveKnight(startX, startY, destinationX, destinationY)
+	case Bishop:
+		return e.MoveBishop(startX, startY, destinationX, destinationY)
+	case Rook:
+		return e.MoveRook(startX, startY, destinationX, destinationY)
+	}
+
+	return move, fmt.Errorf("invalid move, where the fuck did you get a piece we have never seen")
+}
+
 func (e *Engine) MovePawn(startX, startY, destinationX, destinationY int32) (Move, error) {
 	move := Move{}
 	move.PreviousEnpassantSquareState = e.enpassantSquare
