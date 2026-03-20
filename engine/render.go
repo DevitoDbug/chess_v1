@@ -41,14 +41,15 @@ func (e *Engine) RenderBoard() {
 func (e *Engine) RenderEndgame(endGameState EndGameState) {
 	e.RenderBoard()
 
-	// TODO: maybe we can do something more interesting for the endgame rendering
+	// TODO: Maybe we find something more interesting to render on an end of a game for now printing text
+	// it perfectly fine
 	fmt.Println()
 	fmt.Println()
 	if endGameState.CheckMate {
-		fmt.Println("***** Check mate *****")
+		fmt.Println("***** Checkmate *****")
 		fmt.Printf("%v wins", e.currentPlayerColor)
 	} else if endGameState.StaleMate {
-		fmt.Println("***** Stale mate *****")
-		fmt.Println("It'd a draw")
+		fmt.Println("***** Stalemate *****")
+		fmt.Println("It's a draw. GG")
 	}
 }
