@@ -7,7 +7,7 @@ import (
 // This file contains the game loop
 
 func (e *Engine) Run() {
-	e.RenderTerminal()
+	e.RenderBoard()
 
 	for {
 		var input string
@@ -24,19 +24,25 @@ func (e *Engine) Run() {
 		}
 		fmt.Printf("parse Input is: %+v\n", parsedInput)
 
-		// Check if it is a valid move
-		// 	-> Is it the correct correct color
-		//	-> Is the destination allowed (Not out of bound, our piece can move there, another of our piece is not there)
 		err = e.MovePiece(parsedInput)
 		if err != nil {
 			fmt.Printf("%v\n", err)
-		} else {
-			e.currentPlayerColor = toggleCurrentPlayer(e.currentPlayerColor)
+			e.RenderBoard()
+			continue
 		}
 
+		// Check for checkmate or stalemate
+		endGameState := e.GetEndGameState()
+		if endGameState != nil {
+			e.RenderEndgame(*endGameState)
+			break
+		}
+
+		e.currentPlayerColor = toggleCurrentPlayer(e.currentPlayerColor)
+
 		fmt.Println("******************************************")
 		fmt.Println("******************************************")
 
-		e.RenderTerminal()
+		e.RenderBoard()
 	}
 }

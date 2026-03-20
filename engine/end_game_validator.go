@@ -1,5 +1,7 @@
 package engine
 
+import "fmt"
+
 // GetEndGameState - tells if there is a checkmate of a stalemate as early as possible.
 func (e *Engine) GetEndGameState() *EndGameState {
 	opponentColor := toggleCurrentPlayer(e.currentPlayerColor)
@@ -14,9 +16,14 @@ func (e *Engine) GetEndGameState() *EndGameState {
 
 			pseudoMoves := e.GetAllPossiblePseudoMoves(column, row)
 			for _, pseudoMove := range pseudoMoves {
+				kingIsInDanger := false
 				move, err := e.GigaMove(pseudoMove.FromX, pseudoMove.FromY, pseudoMove.ToX, pseudoMove.ToY)
 				if err != nil {
 					continue
+				}
+				king := e.findKing(opponentColor)
+				if e.isSquareAttacked(king.ColumnIndex, king.RowIndex, e.currentPlayerColor) {
+					kingIsInDanger = true
 				}
 
 				err = e.UndoMove(move)
@@ -24,10 +31,14 @@ func (e *Engine) GetEndGameState() *EndGameState {
 					panic("UndoMove failed")
 				}
 
-				return &EndGameState{
-					StaleMate: false,
-					CheckMate: false,
-				} // found a valid move no need for further checks
+				if kingIsInDanger {
+					continue
+				}
+
+				fmt.Printf("%+v\n", move)
+				fmt.Println()
+
+				return nil // found a valid move no need for further checks
 			}
 		}
 	}

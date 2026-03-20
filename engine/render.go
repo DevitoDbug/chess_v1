@@ -6,7 +6,7 @@ import (
 	"github.com/DevitoDbug/chess_v1/utils"
 )
 
-func (e *Engine) RenderTerminal() {
+func (e *Engine) RenderBoard() {
 	utils.ClearScreen()
 	utils.MoveCursorTopLeft()
 
@@ -36,4 +36,19 @@ func (e *Engine) RenderTerminal() {
 		fmt.Printf("%v %c ", utils.Green, 'a'+num)
 	}
 	fmt.Printf("%v\n", utils.White)
+}
+
+func (e *Engine) RenderEndgame(endGameState EndGameState) {
+	e.RenderBoard()
+
+	// TODO: maybe we can do something more interesting for the endgame rendering
+	fmt.Println()
+	fmt.Println()
+	if endGameState.CheckMate {
+		fmt.Println("***** Check mate *****")
+		fmt.Printf("%v wins", e.currentPlayerColor)
+	} else if endGameState.StaleMate {
+		fmt.Println("***** Stale mate *****")
+		fmt.Println("It'd a draw")
+	}
 }

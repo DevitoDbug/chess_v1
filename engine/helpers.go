@@ -7,21 +7,21 @@ import (
 )
 
 var whitePieces = [...]rune{
-	Pawn:   '♙',
-	Knight: '♘',
-	Bishop: '♗',
-	Rook:   '♖',
-	Queen:  '♕',
-	King:   '♔',
-}
-
-var blackPieces = [...]rune{
 	Pawn:   '♟',
 	Knight: '♞',
 	Bishop: '♝',
 	Rook:   '♜',
 	Queen:  '♛',
 	King:   '♚',
+}
+
+var blackPieces = [...]rune{
+	Pawn:   '♙',
+	Knight: '♘',
+	Bishop: '♗',
+	Rook:   '♖',
+	Queen:  '♕',
+	King:   '♔',
 }
 
 func GetRenderLetter(pieceType PieceType, color PieceColor) rune {
