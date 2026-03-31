@@ -34,7 +34,7 @@ func GetRenderLetter(pieceType PieceType, color PieceColor) rune {
 	return ' '
 }
 
-func GetColorLetter(color PieceColor) string {
+func getColorLetter(color PieceColor) string {
 	switch color {
 	case Black:
 		return "B"
@@ -46,50 +46,62 @@ func GetColorLetter(color PieceColor) string {
 }
 
 type Input struct {
-	StartX       int32
-	StartY       int32
-	DestinationX int32
-	DestinationY int32
+	StartX         int32
+	StartY         int32
+	DestinationX   int32
+	DestinationY   int32
+	PromotionPiece *PieceType
 }
 
 // Expect input like a2f4
 // Get the starting square and the destination square
-func ParseInput(addressInputString string) (Input, error) {
+func parseInput(addressInputString string) (Input, error) {
 	chars := strings.Split(addressInputString, "")
+	var promotionPiece *PieceType
 
 	if len(chars) != 4 {
-		return Input{}, fmt.Errorf("invalid input. String provided is not of the required length")
+		if len(chars) != 5 {
+			return Input{}, fmt.Errorf("invalid input. String provided is not of the required length")
+		}
+
+		piece, err := getPromortionPieceType(chars[len(chars)-1])
+		if err != nil {
+			return Input{}, err
+		}
+
+		promotionPiece = piece
 	}
 
-	startingX, err := ConvertLetterToCorrespondingIndexNumber(chars[0])
+	startingX, err := convertLetterToCorrespondingIndexNumber(chars[0])
 	if err != nil {
 		return Input{}, fmt.Errorf("invalid input. First char is invalid try using a letter between a and h")
 	}
 
-	startingY, err := ConvertStringNumberToInt32(chars[1])
+	startingY, err := convertStringNumberToInt32(chars[1])
 	if err != nil {
 		return Input{}, fmt.Errorf("invalid input. Second char is invalid try using a  between 1 and 8")
 	}
 
-	destinationX, err := ConvertLetterToCorrespondingIndexNumber(chars[2])
+	destinationX, err := convertLetterToCorrespondingIndexNumber(chars[2])
 	if err != nil {
 		return Input{}, fmt.Errorf("invalid input. Third char is invalid try using a letter between a and h")
 	}
 
-	destinationY, err := ConvertStringNumberToInt32(chars[3])
+	destinationY, err := convertStringNumberToInt32(chars[3])
 	if err != nil {
 		return Input{}, fmt.Errorf("invalid input. Forth char is invalid try using a  between 1 and 8")
 	}
 
 	return Input{
-		StartX:       startingX,
-		StartY:       startingY - 1,
-		DestinationX: destinationX,
-		DestinationY: destinationY - 1,
+		StartX:         startingX,
+		StartY:         startingY - 1,
+		DestinationX:   destinationX,
+		DestinationY:   destinationY - 1,
+		PromotionPiece: promotionPiece,
 	}, nil
 }
 
-func ConvertLetterToCorrespondingIndexNumber(char string) (int32, error) {
+func convertLetterToCorrespondingIndexNumber(char string) (int32, error) {
 	switch char {
 	case "a":
 		return 0, nil
@@ -112,12 +124,31 @@ func ConvertLetterToCorrespondingIndexNumber(char string) (int32, error) {
 	}
 }
 
-func ConvertStringNumberToInt32(char string) (int32, error) {
+func convertStringNumberToInt32(char string) (int32, error) {
 	num, err := strconv.Atoi(char)
 	if err != nil || num <= 0 { // No position x = 0 in the board from the users view
 		return 0, err
 	}
 	return int32(num), nil
+}
+
+func getPromortionPieceType(char string) (*PieceType, error) {
+	switch char {
+	case "q":
+		piece := Queen
+		return &piece, nil
+	case "r":
+		piece := Rook
+		return &piece, nil
+	case "b":
+		piece := Bishop
+		return &piece, nil
+	case "n":
+		piece := Knight
+		return &piece, nil
+	default:
+		return nil, fmt.Errorf("promotion error, invalid piece")
+	}
 }
 
 func toggleCurrentPlayer(currentPlayerColor PieceColor) PieceColor {

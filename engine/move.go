@@ -30,6 +30,31 @@ func (e *Engine) MovePiece(input Input) error {
 		return fmt.Errorf("invalid move, player in check")
 	}
 
+	// Check for promotions
+	movedPiece := e.board[move.ToY][move.ToX]
+	if movedPiece.Color == White && input.DestinationY == 7 && movedPiece.Type == Pawn {
+		if input.PromotionPiece != nil {
+			e.board[input.DestinationY][input.DestinationX].Type = *input.PromotionPiece
+		} else {
+			err := e.UndoMove(move)
+			if err != nil {
+				return fmt.Errorf("could not undo move. Error:  %v", err)
+			}
+			return fmt.Errorf("invalid move, promotion piece not specified")
+		}
+	}
+	if movedPiece.Color == Black && input.DestinationY == 0 && movedPiece.Type == Pawn {
+		if input.PromotionPiece != nil {
+			e.board[input.DestinationY][input.DestinationX].Type = *input.PromotionPiece
+		} else {
+			err := e.UndoMove(move)
+			if err != nil {
+				return fmt.Errorf("could not undo move. Error:  %v", err)
+			}
+			return fmt.Errorf("invalid move, promotion piece not specified")
+		}
+	}
+
 	e.moveStack = append(e.moveStack, move)
 
 	// Clean ups

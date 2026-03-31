@@ -17,7 +17,7 @@ func (e *Engine) Run() {
 			fmt.Println("Invalid value entered")
 		}
 
-		parsedInput, err := ParseInput(input)
+		parsedInput, err := parseInput(input)
 		if err != nil {
 			fmt.Println("Invalid value entered")
 		}
